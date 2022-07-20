@@ -1,0 +1,149 @@
+<html>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	
+	<script src="static/teamtracking/papaparse.min.js"></script>
+<body>
+
+Howdy!
+
+
+		<script>
+			/*<![CDATA[*/
+
+			var app = angular.module('myApp', []);
+			
+			app.config(['$httpProvider', function($httpProvider) {
+                $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+            }]);
+			
+			app.controller('recipesCtrl', function($scope, $http, $q) {
+				
+	
+				var clearAlerts = function() {
+                    $scope.error = {}, $scope.warning = null
+                };
+				
+				
+				// Upload and read CSV function
+                $scope.submitForm = function(form) {
+                    clearAlerts();
+                    var filename = document.getElementById("bulkDirectFile");
+                    if (filename.value.length < 1 ){
+                        ($scope.warning = "Please upload a file");
+                    } else {
+                        $scope.title = "Confirm file";
+                        var file = filename.files[0];
+                        console.log(file)
+                        var fileSize = 0;
+                        if (filename.files[0]) {
+                             
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                var table = $("<table />").css('width','100%');
+                    
+                                var rows = e.target.result.split("\n");
+                                for (var i = 0; i < rows.length; i++) {
+                                    var row = $("<tr  />");
+                                    var cells = rows[i].split(",");
+                                    for (var j = 0; j < cells.length; j++) {
+                                        var cell = $("<td />").css('border','1px solid black');
+                                        cell.html(cells[j]);
+                                        row.append(cell);
+                                    }
+                                    table.append(row);
+                                }
+                                $("#dvCSV").html('');
+                                $("#dvCSV").append(table);
+                            }
+                
+                            reader.readAsText(filename.files[0]);
+            
+                        }
+                        return false;
+                    }
+                }
+				
+				    //   Convert to JSON function
+                $scope.add = function(){
+                    var Table = document.getElementById('Table');
+                    var file = document.getElementById("bulkDirectFile").files[0];
+                    $('.loading').show();
+                    var allResults = [];
+         
+                    Papa.parse(file, {
+                        download: true,
+                        header: true,
+                        skipEmptyLines: true,
+                        error: function(err, file, inputElem, reason) { },
+                        complete: function(results) {
+                            allResults.push(results.data);
+                            console.log(results.data)
+							
+							$http.post("tcrsresponses/process_responses/", results.data).then(function(response) {
+					            console.log(response);
+				            }, function(error){
+				                console.log(error);
+				            });
+                 
+                        }
+                      });   
+                    }
+      				
+			});
+
+			/*]]>*/
+		</script>
+
+		<div ng-app="myApp" ng-controller="recipesCtrl">
+
+
+            <div class="box-body table-responsive">
+                    <hr>
+                    <hr>
+                    <!-- form start -->
+                    <p>Your uploaded csv file will be shown to you in a preview  for Confirmation</p>
+                    <form role="form" class="form-horizontal" name="bulkDirectForm" method="post" enctype="multipart/form-data" novalidate>
+                      <div class="box-body">
+                        <div id="messages" class="alert alert-success" data-ng-show="messages" data-ng-bind="messages"></div>
+                        <div id="warning" class="alert alert-warning" data-ng-show="warning" data-ng-bind="warning"></div>
+                         
+                        <div class="form-group">
+                          <div class="col-sm-10">
+                            <input type="file" class="form-control" id="bulkDirectFile" placeholder="CSV file with phone numbers and amount" ng-model="prd.bulk_direct_file" required accept=".csv">
+                          </div>
+                          <div class="col-sm-2">
+                            <button type="submit" class="btn btn-block btn-info" ng-hide="myVar" data-ng-click="submitForm(bulkDirectForm)">Upload!</button>
+                          </div>
+                           
+ 
+                          <br>
+                          <br>
+                           
+                   
+                          <div class="col-sm-10" ng-show="title" id="Table">
+                          <h5>Confirm file to be uploaded and Click the Proceed Button Below</h5>
+                          
+               
+                          <div id="dvCSV"></div>
+ 
+                          <br>
+                           
+                          <button type="button" class="btn btn-success" data-ng-click="add()">Proceed!</button>
+                          </div>
+ 
+ 
+                           
+                        </div>
+ 
+                      </div>
+                    </form>
+                      
+            </div>
+		</div>
+
+</body>
+
+
+</html>
