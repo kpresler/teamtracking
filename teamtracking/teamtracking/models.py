@@ -29,13 +29,17 @@ class TcrsResponse(models.Model):
     section = models.CharField(max_length=10);
     team = models.CharField("Name or number of the student's team", max_length=20);
     submitter = models.CharField("Who submitted this response?", max_length=50);
+    iteration = models.CharField(max_length=5);
 
+
+    def __str__(self):
+        return "Response from " + self.submitter + " to iteration " + self.iteration + " on team " + self.section + "-" + self.team + " in " + self.course;
 
     
 class TcrsQuestionResponse(models.Model):
     """Represents a response to a single question on the TCRS"""
     
-    question = models.OneToOneField(TcrsQuestion, on_delete=models.PROTECT);
+    question = models.ForeignKey(to=TcrsQuestion, on_delete=models.PROTECT, null=False, blank=False);
     
     response = models.CharField("Response to question", max_length=1000);
     

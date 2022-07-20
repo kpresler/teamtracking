@@ -11,6 +11,7 @@ from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse;
 from django.http import HttpResponse;
 
 import sys;
+from datetime import datetime;
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -46,16 +47,29 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         """The idea here is that we want to parse each line and turn it into a TCRS Response.  In order to be more flexible and not just support a hardcoded set of responses, we're going to pull a list of possible questions from the DB, and then match the question headers in the request to the questions supported"""
         
-        possible_questions = TcrsQuestion.objects.all();
-        print("There are " + str(len(possible_questions)) + " possible questions");
-        for question in possible_questions:
-            print("    " + str(question));
-        print("\n\n\n\n");
+        possible_questions = TcrsQuestion.objects.filter(active=True);
         
         for tcrs_response in request.data:
             print(tcrs_response);
             
             full_response = TcrsResponse();
+            
+            full_response.submit_date = datetime.now();
+            full_response.course = tcrs_response['course'];
+            full_response.section = tcrs_response['section'];
+            full_response.team = tcrs_response['team'];
+            full_response.submitter = tcrs_response['submitter'];
+            full_response.iteration = tcrs_response['iteration'];
+            
+            possiblyMatching = TcrsResponse.objects.filter(course=full_response.course, section=full_response.section, team=full_response.team, iteration=full_response.iteration);
+            
+            print("Found " + str(possiblyMatching) + " in database already ");
+            
+            if possiblyMatching.exists():
+                print("Skipping over this response");
+                continue;
+            
+            full_response.save();
             
             for (question, response) in tcrs_response.items():
                 print(question + "::" + response);
@@ -67,8 +81,10 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                     question_response.question = matchingQuestion[0];
                     question_response.response = response;
                     question_response.fullResponse = full_response;
+                    question_response.save();
                     
             print (full_response);
+            #full_response.save();
         
         sys.stdout.flush();
         return HttpResponse("ok");
