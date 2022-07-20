@@ -5,10 +5,11 @@ from django.shortcuts import render
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework import status;
 from rest_framework.decorators import action
 from teamtracking.teamtracking.serializers import UserSerializer, GroupSerializer, TcrsQuestionSerializer, TcrsResponseSerializer;
 from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse;
-from django.http import HttpResponse;
+from django.http import HttpResponse, JsonResponse;
 
 import sys;
 from datetime import datetime;
@@ -49,6 +50,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         possible_questions = TcrsQuestion.objects.filter(active=True);
         
+        saved_responses = 0;
+        skipped_responses = 0;
+        
         for tcrs_response in request.data:
             print(tcrs_response);
             
@@ -67,6 +71,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             
             if possiblyMatching.exists():
                 print("Skipping over this response");
+                skipped_responses += 1;
                 continue;
             
             full_response.save();
@@ -83,11 +88,12 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                     question_response.fullResponse = full_response;
                     question_response.save();
                     
-            print (full_response);
-            #full_response.save();
+            saved_responses += 1;                    
+
+        response = (saved_responses, skipped_responses);
         
         sys.stdout.flush();
-        return HttpResponse("ok");
+        return JsonResponse(response, safe=False, status=status.HTTP_200_OK);
     
     
     

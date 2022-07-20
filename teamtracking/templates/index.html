@@ -18,11 +18,10 @@ Howdy!
                 $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
             }]);
 			
-			app.controller('recipesCtrl', function($scope, $http, $q) {
-				
-	
-				var clearAlerts = function() {
-                    $scope.error = {}, $scope.warning = null
+			app.controller('importCtrl', function($scope, $http) {
+			
+			    var clearAlerts = function() {
+                    $scope.error = {}, $scope.warning = null, $scope.success=false;
                 };
 				
 				
@@ -83,6 +82,9 @@ Howdy!
 							
 							$http.post("tcrsresponses/process_responses/", results.data).then(function(response) {
 					            console.log(response);
+								$scope.uploaded = response.data[0];
+								$scope.skipped = response.data[1];
+								$scope.success = true;
 				            }, function(error){
 				                console.log(error);
 				            });
@@ -90,13 +92,15 @@ Howdy!
                         }
                       });   
                     }
+					
+									
       				
 			});
 
 			/*]]>*/
 		</script>
 
-		<div ng-app="myApp" ng-controller="recipesCtrl">
+		<div ng-app="myApp" ng-controller="importCtrl">
 
 
             <div class="box-body table-responsive">
@@ -132,6 +136,8 @@ Howdy!
                            
                           <button type="button" class="btn btn-success" data-ng-click="add()">Proceed!</button>
                           </div>
+						  
+
  
  
                            
@@ -141,6 +147,14 @@ Howdy!
                     </form>
                       
             </div>
+    	    <div ng-if="success">
+			{% verbatim %}
+				A total of {{uploaded}} responses were uploaded and saved.  {{skipped}} responses were already present and have been skipped.
+			{% endverbatim %}						  
+			</div>
+					
+
+			
 		</div>
 
 </body>
