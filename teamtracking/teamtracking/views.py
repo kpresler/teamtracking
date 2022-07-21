@@ -3,15 +3,20 @@ from django.shortcuts import render
 # Create your views here.
 
 from django.contrib.auth.models import User, Group
+from django.http import HttpResponse, JsonResponse;
+from django.db import transaction;
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import status;
 from rest_framework.decorators import action
 from rest_framework import generics;
+
+
 from teamtracking.teamtracking.serializers import UserSerializer, GroupSerializer, TcrsQuestionSerializer, TcrsResponseSerializer;
 from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse;
-from django.http import HttpResponse, JsonResponse;
-from django.db import transaction;
+
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk import tokenize
 
 import sys;
 from datetime import datetime;
@@ -145,5 +150,5 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 #end class
     
     
-def index(request):
-    return render(request,"index.html");
+def loadTCRS(request):
+    return render(request,"loadTCRS.html");

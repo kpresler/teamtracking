@@ -36,5 +36,5 @@ router.register(r'tcrsresponses', views.TcrsResponseViewSet);
 urlpatterns = [
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path("index", views.index, name="index"),
+    path("loadTCRS", views.loadTCRS, name="loadTCRS"),
 ]

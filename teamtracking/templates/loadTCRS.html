@@ -1,12 +1,26 @@
 <html>
+    <head>
+        <title>Populate Data from TCRS Submissions</title>
 <script
 	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 	
 	<script src="static/teamtracking/papaparse.min.js"></script>
-<body>
+	
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+	integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+	crossorigin="anonymous" />
 
-Howdy!
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+	integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+	crossorigin="anonymous"></script>
+	
+	
+<script src="https://kit.fontawesome.com/8b14d54041.js"
+	crossorigin="anonymous"></script>
+<body>
 
 
 		<script>
@@ -46,7 +60,7 @@ Howdy!
                                 for (var i = 0; i < rows.length; i++) {
                                     var row = $("<tr  />");
                                     var cells = rows[i].split(",");
-                                    for (var j = 0; j < cells.length; j++) {
+                                    for (var j = 0; j < cells.length && j < 10; j++) {
                                         var cell = $("<td />").css('border','1px solid black');
                                         cell.html(cells[j]);
                                         row.append(cell);
@@ -100,14 +114,14 @@ Howdy!
 			/*]]>*/
 		</script>
 
-		<div ng-app="myApp" ng-controller="importCtrl">
+		<div ng-app="myApp" ng-controller="importCtrl" class="container">
 
 
             <div class="box-body table-responsive">
                     <hr>
                     <hr>
                     <!-- form start -->
-                    <p>Your uploaded csv file will be shown to you in a preview  for Confirmation</p>
+                    <p>Select the TCRS response CSV file, and click "Preview" to view a preview of the data in the file.  Make sure you have <a href="/tcrsquestions">populated the questions and question types</a> for the TCRS <it>before</it> uploading the CSV file or data will not be saved.</p>
                     <form role="form" class="form-horizontal" name="bulkDirectForm" method="post" enctype="multipart/form-data" novalidate>
                       <div class="box-body">
                         <div id="messages" class="alert alert-success" data-ng-show="messages" data-ng-bind="messages"></div>
@@ -118,7 +132,7 @@ Howdy!
                             <input type="file" class="form-control" id="bulkDirectFile" placeholder="CSV file with phone numbers and amount" ng-model="prd.bulk_direct_file" required accept=".csv">
                           </div>
                           <div class="col-sm-2">
-                            <button type="submit" class="btn btn-block btn-info" ng-hide="myVar" data-ng-click="submitForm(bulkDirectForm)">Upload!</button>
+                            <button type="submit" class="btn btn-block btn-info" ng-hide="myVar" data-ng-click="submitForm(bulkDirectForm)">Preview CSV Data</button>
                           </div>
                            
  
@@ -127,14 +141,14 @@ Howdy!
                            
                    
                           <div class="col-sm-10" ng-show="title" id="Table">
-                          <h5>Confirm file to be uploaded and Click the Proceed Button Below</h5>
+                          <h5>Confirm file to be uploaded and click the Upload button below</h5>
                           
                
                           <div id="dvCSV"></div>
  
                           <br>
                            
-                          <button type="button" class="btn btn-success" data-ng-click="add()">Proceed!</button>
+                          <button type="button" class="btn btn-success" data-ng-click="add()">Upload</button>
                           </div>
 						  
 
