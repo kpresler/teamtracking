@@ -3,7 +3,7 @@
         <title>Populate Data from TCRS Submissions</title>
 <script
 	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	
 	<script src="static/teamtracking/papaparse.min.js"></script>
 	
@@ -94,7 +94,7 @@
                             allResults.push(results.data);
                             console.log(results.data)
 							
-							$http.post("tcrsresponses/process_responses/", results.data).then(function(response) {
+							$http.post("api/tcrsresponses/process_responses/", results.data).then(function(response) {
 					            console.log(response);
 								$scope.uploaded = response.data[0];
 								$scope.skipped = response.data[1];

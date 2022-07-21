@@ -152,3 +152,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
     
 def loadTCRS(request):
     return render(request,"loadTCRS.html");
+
+
+def index(request):
+    return render(request,"index.html");

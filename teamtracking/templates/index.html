@@ -1,0 +1,64 @@
+<html>
+	<head>
+	
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		
+    <link rel="stylesheet"
+	    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+	    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+	    crossorigin="anonymous" />
+
+    <script
+	    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+	    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+	    crossorigin="anonymous"></script>
+	
+
+	
+	<style>
+        .top15 {
+	        margin-top: 15px;
+        }
+
+        .top5 {
+	        margin-top: 5px;
+        }
+    </style>
+
+    </head>
+	
+	
+	<body>
+	
+	    <div class="container">
+	
+	    <h3>Welcome to the Software Engineering Team Tracking Application!</h3>
+		
+		<div class="top15">
+		The purpose of this application is to support tracking student teams in software engineering courses (or any other courses that feature team-based projects) so that the teaching staff can observe and track team challenges, and offer support to teams in overcoming these challenges.  This application is built around the Team Collaboration Reflection Survey (TCRS) <a href="https://dl.acm.org/doi/abs/10.1145/3478431.3499367" target="_blank">from SIGCSE 2022</a>
+		
+		</div>
+		
+		<div class="top15">
+		To start with, <a href="api/tcrsquestions">initialise the questions </a>used in your version of the TCRS.  Each question has a question text, which must <strong>exactly</strong> match against that in the CSV file you will submit later on.  Additionally, questions have a type -- <tt>positive</tt> questions are ones where we would expect a successful team to answer "agree" or "strongly agree"; <tt>negative</tt> questions are ones where would expect successful teams to answer "disagree" or "strongly disagree".  <tt>text</tt> questions are natural-language processed, and <tt>other</tt> questions are skipped when scoring the survey (but are still available for viewing later on).
+		
+		</div>
+		
+		
+		<div class="top15">
+		Next, <a href="loadTCRS">load in your TCRS submissions</a> from a CSV file.  
+		
+		</div>
+		
+		<div class="top15">
+		For a reference of the API and to view stored data, check out ;<a href="/api/">the API</a>.
+		
+		</div>
+		
+	    </div>
+	
+	</body>
+
+
+</html>
