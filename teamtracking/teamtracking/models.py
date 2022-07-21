@@ -30,10 +30,12 @@ class TcrsResponse(models.Model):
     team = models.CharField("Name or number of the student's team", max_length=20);
     submitter = models.CharField("Who submitted this response?", max_length=50);
     iteration = models.CharField(max_length=5);
+    
+    score = models.IntegerField();
 
 
     def __str__(self):
-        return "Response from " + self.submitter + " to iteration " + self.iteration + " on team " + self.section + "-" + self.team + " in " + self.course;
+        return "Response from " + self.submitter + " to iteration " + self.iteration + " on team " + self.section + "-" + self.team + " in " + self.course + " with a score of " + str(self.score);
 
     
 class TcrsQuestionResponse(models.Model):
