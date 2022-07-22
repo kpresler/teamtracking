@@ -38,4 +38,5 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path("loadTCRS", views.loadTCRS, name="loadTCRS"),
     path("", views.index, name="index"),
+    path("viewTeamDetails", views.teamDetails, name="viewTeamDetails"),
 ]

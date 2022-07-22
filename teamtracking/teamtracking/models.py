@@ -47,6 +47,18 @@ class TcrsQuestionResponse(models.Model):
     
     fullResponse = models.ForeignKey(to=TcrsResponse, on_delete=models.PROTECT, related_name="responses", null=True, blank=True);
     
+    def __str__(self):
+        return str(self.question) + "::" + self.response;
+    
+    def responseToDictionary(self):
+                
+        dictionary = {};
+        dictionary["question"] = self.question.text;
+        dictionary["response"] = self.response;
+        
+        return dictionary;
+        
+    
     
 
 

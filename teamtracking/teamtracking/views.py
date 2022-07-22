@@ -81,7 +81,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             full_response.score = 0;
             
             """Is this a duplicate against one that has already been saved?  If so, skip it"""
-            possiblyMatching = TcrsResponse.objects.filter(course=full_response.course, section=full_response.section, team=full_response.team, iteration=full_response.iteration);
+            possiblyMatching = TcrsResponse.objects.filter(course=full_response.course, section=full_response.section, team=full_response.team, iteration=full_response.iteration,submitter=full_response.submitter);
             if possiblyMatching.exists():
                 print("Skipping over this response");
                 skipped_responses += 1;
@@ -98,9 +98,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                 matchingQuestions = [x for x in possible_questions if x.text == question];
                 
                 
-                if matchingQuestion != []:
+                if matchingQuestions != []:
                     matching_question = matchingQuestions[0];
-                    print("Matching question is: " + str(matchingQuestions));
+                    print("Matching question is: " + str(matching_question));
                     question_response = TcrsQuestionResponse();
                     question_response.question = matching_question;
                     question_response.response = response;
@@ -147,6 +147,40 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         sys.stdout.flush();
         return JsonResponse(response, safe=False, status=status.HTTP_200_OK);
     #end method
+    
+    
+    @action(detail=False, methods=['post'])
+    @transaction.atomic
+    def team_data(self, request):
+
+        """First, go load in all matching TCRS responses"""
+        section = request.data['section'];
+        team = request.data['teamNumber'];
+        iteration = request.data['iteration'];
+        course = request.data['course'];
+        matchingResponses = TcrsResponse.objects.filter(course=course, section=section, team=team, iteration=iteration).values();
+
+
+        """Then, find responses to specific questions"""
+        
+        
+        
+        resp = {};
+        
+        for matchingResponse in matchingResponses:
+            print("Looking for Question Responses for TCRS #" + str(matchingResponse['id']));
+            
+            respForUser = [];
+            
+            individualResponses = TcrsQuestionResponse.objects.select_related().filter(fullResponse = matchingResponse['id']).all();
+            print("Type of response:" + str(type(individualResponses)));
+            for response in individualResponses:
+                respForUser.append(response.responseToDictionary());
+            resp[matchingResponse['submitter']] = respForUser;
+        
+        sys.stdout.flush();
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);        
+        
 #end class
     
     
@@ -156,3 +190,6 @@ def loadTCRS(request):
 
 def index(request):
     return render(request,"index.html");
+
+def teamDetails(request):
+    return render(request,"viewTeamDetails.html");
