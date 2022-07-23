@@ -4,6 +4,7 @@ from django.shortcuts import render
 
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponse, JsonResponse;
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction;
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -158,6 +159,8 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     @transaction.atomic
     def team_data(self, request):
+        
+        resp = {};
 
         """First, go load in all matching TCRS responses"""
         section = request.data['section'];
@@ -165,12 +168,44 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         iteration = Iteration.objects.filter(displayed_value=request.data['iteration']).get();
         course = request.data['course'];
         matchingResponses = TcrsResponse.objects.filter(course=course, section=section, team=team, iteration=iteration).values();
-
+        
+        
+        """Find matching responses from last week to compute a change in sentiment"""
+        lastIteration = None;
+        try:
+            lastIteration = Iteration.objects.filter(sequential_value=iteration.sequential_value-1).get();
+        except ObjectDoesNotExist:
+            pass;
+        
+        
+        responsesLastIteration = None;
+        if lastIteration:
+            responsesLastIteration = TcrsResponse.objects.filter(course=course, section=section, team=team, iteration=lastIteration).values();
+            
+            
+       
+        scoresThisWeek = [x['score'] for x in matchingResponses];
+        sentimentThisWeek = sum(scoresThisWeek)/len(scoresThisWeek);
+        
+        sentimentChange = dict();
+        
+        if responsesLastIteration:
+            scoresLastWeek = [x['score'] for x in responsesLastIteration];
+            sentimentLastWeek = sum(scoresLastWeek)/len(scoresLastWeek);
+            sentimentChange['change'] = sentimentThisWeek - sentimentLastWeek;
+            sentimentChange['this'] = sentimentThisWeek;
+            sentimentChange['last'] = sentimentLastWeek;
+        else:
+            sentimentChange['change'] = "No Data";
+            sentimentChange['this'] = sentimentThisWeek;
+        
+        resp['sentimentChange'] = sentimentChange;
+        
 
         """Then, find responses to specific questions"""
-                
-        resp = {};
-        
+
+        tcrsDetails = dict();
+                       
         """MatchingResponses is all individual TCRS submissions....need to go through each one to pull in the associated questions"""
         for matchingResponse in matchingResponses:
             print("Looking for Question Responses for TCRS #" + str(matchingResponse['id']));
@@ -183,7 +218,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             for response in individualResponses:
                 """And finally prepare JSON data for the answer to each question"""
                 respForUser.append(response.responseToDictionary());
-            resp[matchingResponse['submitter']] = respForUser;
+            tcrsDetails[matchingResponse['submitter']] = respForUser;
+            
+        resp["tcrsDetails"] = tcrsDetails;
         
         sys.stdout.flush();
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);        

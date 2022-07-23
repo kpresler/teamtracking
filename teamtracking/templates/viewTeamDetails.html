@@ -47,7 +47,10 @@
 			
 			    $scope.iterations = ['0', '1A', '1B', '2A', '5'];
 				
-							
+               
+			    $scope.round = function(number){
+					return isNaN(number) ? number : number.toFixed(2);
+				}
 
 			    
 				$scope.displayTable = false;
@@ -63,11 +66,13 @@
       				
 					$http.post("api/tcrsresponses/team_data/", submit).then(function(response) {
 					    console.log(response);
-						$scope.responseData = response.data;
+						$scope.responseData = response.data.tcrsDetails;
 						/* Retrieve the text of all questions that were answered to use as headers for the table */
 						$scope.headers = ($scope.responseData[Object.keys($scope.responseData)[0]].map(e => e.question));
 						
-						$scope.displayTable = true;
+						$scope.sentimentChange = response.data.sentimentChange;
+						
+						$scope.displayResults = true;
 						
 				    }, function(error){
 				        console.log(error);
@@ -94,7 +99,13 @@
 		<div class="well"></div>
 	</div>
 	<div class="col-md-4">
-		<div class="well">Sentiment Change Overall</div>
+		<div class="well" ng-show="displayResults">Average change in sentiment: {{round(sentimentChange.change)}}
+		
+		<div ng-if="sentimentChange.last != undefined">
+		(average this week: {{round(sentimentChange.this)}}; average last week: {{round(sentimentChange.last)}})
+		</div>
+		
+		</div>
 	</div>
 </div>
 <div class="row">
@@ -115,7 +126,7 @@
 		</div>
 		<div class="row">
 			<div class="col-md-12">
-				<div class="well" ng-show="displayTable">
+				<div class="well" ng-show="displayResults">
 				
 
 				
