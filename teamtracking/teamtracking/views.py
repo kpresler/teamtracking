@@ -257,7 +257,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         uniqueIterations.sort(key=lambda x: x.sequential_value)
         
-        resp["sentimentLabels"] = [x.displayed_value for x in uniqueIterations];
+        resp["iterations"] = [x.displayed_value for x in uniqueIterations];
         
         """Now, fetch sentiment details for each member of the team.  The JSON format we want is:
         {
@@ -286,7 +286,37 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         
         sys.stdout.flush();
-        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);        
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);      
+    
+    @action(detail=False, methods=['post'])
+    @transaction.atomic      
+    def iterations(self,request):
+        section = request.data['section'];
+        team = request.data['teamNumber'];
+        course = request.data['course'];
+                
+        resp = dict();
+        
+        
+        """Get sentiment from each person for each iteration"""
+        
+        teamResponsesAllIterations = TcrsResponse.objects.filter(course=course, section=section, team=team).values();
+
+
+        """Get a list of iterations where we had at least one reply, and then sort them into ascending order so the chart comes out looking ok"""
+        iterationsWithResponses = [x['iteration_id'] for x in teamResponsesAllIterations];
+        uniqueIterationIds = list(dict.fromkeys(iterationsWithResponses))
+        
+        uniqueIterations = [];
+        for iterationId in uniqueIterationIds:
+            uniqueIterations.append(Iteration.objects.filter(id=iterationId).get());
+            
+        uniqueIterations.sort(key=lambda x: x.sequential_value)
+            
+        resp["iterations"] = [x.displayed_value for x in uniqueIterations];
+        
+        sys.stdout.flush();
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);          
         
 #end class
     

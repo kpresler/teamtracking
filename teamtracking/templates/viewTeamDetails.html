@@ -22,9 +22,9 @@
     crossorigin="anonymous"></script>
     
     <style>
-		div {
-			border-style: dotted;
-		}
+        div {
+            border-style: dotted;
+        }
     </style>
     
 </head>
@@ -57,8 +57,7 @@
                 $scope.teamNumber = "5";
                 $scope.course = "CSCI 2335";
             
-                $scope.iterations = ['0', '1A', '1B', '2A', '5'];
-                
+              
                
                 $scope.round = function(number){
                     return isNaN(number) ? number : number.toFixed(2);
@@ -88,7 +87,7 @@
                     new Chart(document.getElementById("line-chart"), {
                         type: 'line',
                         data: {
-                            labels: $scope.sentimentLabels,
+                            labels: $scope.iterations,
                             datasets: datasets
                         },
                         options: {
@@ -101,7 +100,22 @@
                     });
 
                 }
-
+                
+                $scope.loadIterations = function (){
+                    let submit = {};
+                    submit.section = $scope.section;
+                    submit.teamNumber = $scope.teamNumber;
+                    submit.course = $scope.course;
+                      
+                    $http.post("api/tcrsresponses/iterations/", submit).then(function(response) {
+                        $scope.iterations = response.data.iterations;                
+                    }, function(error){
+                        console.log(error);
+                    });
+                }
+                
+                $scope.loadIterations();
+                
 
                 $scope.loadChart = function (){
                     let submit = {};
@@ -110,7 +124,7 @@
                     submit.course = $scope.course;
                       
                     $http.post("api/tcrsresponses/team_sentiment_data/", submit).then(function(response) {
-                        $scope.sentimentLabels = response.data.sentimentLabels;                
+                        $scope.iterations = response.data.iterations;                
                         $scope.sentimentDetails = response.data.sentimentDetails;
                         displayChart();
                         
