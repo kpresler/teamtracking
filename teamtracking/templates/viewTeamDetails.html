@@ -2,269 +2,277 @@
    <head>
         <title>View Team Details</title>
 <script
-	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	
-		
+    src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+        
 <link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-	integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-	crossorigin="anonymous" />
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous" />
 
 <script
-	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-	integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-	crossorigin="anonymous"></script>
-	
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
-	
+    
 <script src="https://kit.fontawesome.com/8b14d54041.js"
-	crossorigin="anonymous"></script>
-	
-	<style>
-	div {
-	border-style: dotted;
-	}
-	</style>
-	
+    crossorigin="anonymous"></script>
+    
+    <style>
+		div {
+			border-style: dotted;
+		}
+    </style>
+    
 </head>
 <body>
 
 
-	<script>
-			/*<![CDATA[*/
+    <script>
+            /*<![CDATA[*/
 
-			var app = angular.module('myApp', []);
-			
-			app.config(['$httpProvider', function($httpProvider) {
+            var app = angular.module('myApp', []);
+            
+            app.config(['$httpProvider', function($httpProvider) {
                 $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
             }]);
-			
-			app.controller('teamDetailsCtrl', function($scope, $http) {
-			
-			    $scope.section = "a";
-				$scope.teamNumber = "5";
-				$scope.course = "CSCI 2335";
-			
-			    $scope.iterations = ['0', '1A', '1B', '2A', '5'];
-				
+            
+            app.controller('teamDetailsCtrl', function($scope, $http) {
+            
+            
+                /* This won't work yet since we aren't linking to this with URL parameters....soon :tm:
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                $scope.course = urlParams.get("course");
+                $scope.section = urlParams.get("section");
+                $scope.team = urlParams.get("team");
+                
+                */
+            
+            
+                $scope.section = "a";
+                $scope.teamNumber = "5";
+                $scope.course = "CSCI 2335";
+            
+                $scope.iterations = ['0', '1A', '1B', '2A', '5'];
+                
                
-			    $scope.round = function(number){
-					return isNaN(number) ? number : number.toFixed(2);
-				}
-				
-				let displayChart = function (){
-				
-				
-				let datasets = [];
-				let colours = ["red", "green", "blue", "yellow", "purple", "orange", "black"];
-				var idx = 0;
-				
-				for (const [key, value] of Object.entries($scope.sentimentDetails)){
-				
-					datasets.push({
-						data: value,
-						label: key,
-					    borderColor: colours[idx],
-						fill: false	
+                $scope.round = function(number){
+                    return isNaN(number) ? number : number.toFixed(2);
+                }
+                
+                let displayChart = function (){
+                
+                
+                    let datasets = [];
+                    let colours = ["red", "green", "blue", "yellow", "purple", "orange", "black"];
+                    var idx = 0;
+                
+                    for (const [key, value] of Object.entries($scope.sentimentDetails)){
+                
+                        datasets.push({
+                            data: value,
+                            label: key,
+                            borderColor: colours[idx],
+                            fill: false    
 
-					});
-					idx++;
-				
-				}
-				
-				
-				new Chart(document.getElementById("line-chart"), {
-  type: 'line',
-  data: {
-    labels: $scope.sentimentLabels,
-    datasets: datasets
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Change in team sentiment over time'
-    },
-	spanGaps: true
-  }
-});
+                        });
+                        idx++;
+                
+                    }
+                
+                
+                    new Chart(document.getElementById("line-chart"), {
+                        type: 'line',
+                        data: {
+                            labels: $scope.sentimentLabels,
+                            datasets: datasets
+                        },
+                        options: {
+                            title: {
+                                display: true,
+                                text: 'Change in team sentiment over time'
+                            },
+                            spanGaps: true
+                        }
+                    });
 
-}
-
-
-				$scope.loadChart = function (){
-					let submit = {};
-					submit.section = $scope.section;
-					submit.teamNumber = $scope.teamNumber;
-					submit.course = $scope.course;
-      				
-					$http.post("api/tcrsresponses/team_sentiment_data/", submit).then(function(response) {
-						$scope.sentimentLabels = response.data.sentimentLabels;				
-						$scope.sentimentDetails = response.data.sentimentDetails;
-						
-						displayChart();
-						
-				    }, function(error){
-				        console.log(error);
-				    });
-				
-				}
+                }
 
 
-			    
-				$scope.displayResults = false;
-				
-				$scope.loadData = function(){
-					$scope.displayResults = false;				
+                $scope.loadChart = function (){
+                    let submit = {};
+                    submit.section = $scope.section;
+                    submit.teamNumber = $scope.teamNumber;
+                    submit.course = $scope.course;
+                      
+                    $http.post("api/tcrsresponses/team_sentiment_data/", submit).then(function(response) {
+                        $scope.sentimentLabels = response.data.sentimentLabels;                
+                        $scope.sentimentDetails = response.data.sentimentDetails;
+                        displayChart();
+                        
+                    }, function(error){
+                        console.log(error);
+                    });
+                
+                }
 
-					let submit = {};
-					submit.section = $scope.section;
-					submit.teamNumber = $scope.teamNumber;
-					submit.iteration = $scope.iteration;
-					submit.course = $scope.course;
-      				
-					$http.post("api/tcrsresponses/team_data/", submit).then(function(response) {
-					    console.log(response);
-						$scope.responseData = response.data.tcrsDetails;
-						/* Retrieve the text of all questions that were answered to use as headers for the table */
-						$scope.headers = ($scope.responseData[Object.keys($scope.responseData)[0]].map(e => e.question));
-						
-						$scope.sentimentChange = response.data.sentimentChange;
-						
-						$scope.displayResults = true;
-						
-				    }, function(error){
-				        console.log(error);
-				    });
-				}
-				
-				$scope.loadChart();
-			});
-			
 
-			/*]]>*/
-	</script>
+                
+                $scope.displayResults = false;
+                
+                $scope.loadData = function(){
+                    $scope.displayResults = false;                
 
-	<div ng-app="myApp" ng-controller="teamDetailsCtrl" class="container">
-	
-{% verbatim %}
-		
-		<h3>View Team Details</h3>
-		
-		
+                    let submit = {};
+                    submit.section = $scope.section;
+                    submit.teamNumber = $scope.teamNumber;
+                    submit.iteration = $scope.iteration;
+                    submit.course = $scope.course;
+                      
+                    $http.post("api/tcrsresponses/team_data/", submit).then(function(response) {
+                        console.log(response);
+                        $scope.responseData = response.data.tcrsDetails;
+                        /* Retrieve the text of all questions that were answered to use as headers for the table */
+                        $scope.headers = ($scope.responseData[Object.keys($scope.responseData)[0]].map(e => e.question));
+                        
+                        $scope.sentimentChange = response.data.sentimentChange;
+                        
+                        $scope.displayResults = true;
+                        
+                    }, function(error){
+                        console.log(error);
+                    });
+                }
+                
+                $scope.loadChart();
+            });
+            
+
+            /*]]>*/
+    </script>
+
+    <div ng-app="myApp" ng-controller="teamDetailsCtrl" class="container">
+    
+    {% verbatim %}
+        
+        <h3>View Team Details</h3>
+        
+        
 <div class="row">
-	<div class="col-md-4">
-		<div class="well">{{course}}-{{section}}-{{teamNumber}}</div>
-	</div>
-	<div class="col-md-4">
-		<div class="well"></div>
-	</div>
-	<div class="col-md-4">
-		<div class="well" ng-show="displayResults">Average change in sentiment: {{round(sentimentChange.change)}}
-		
-		<div ng-if="sentimentChange.last != undefined">
-		(average this week: {{round(sentimentChange.this)}}; average last week: {{round(sentimentChange.last)}})
-		</div>
-		
-		</div>
-	</div>
+    <div class="col-md-4">
+        <div class="well">{{course}}-{{section}}-{{teamNumber}}</div>
+    </div>
+    <div class="col-md-4">
+        <div class="well"></div>
+    </div>
+    <div class="col-md-4">
+        <div class="well" ng-show="displayResults">Average change in sentiment: {{round(sentimentChange.change)}}
+        
+        <div ng-if="sentimentChange.last != undefined">
+        (average this week: {{round(sentimentChange.this)}}; average last week: {{round(sentimentChange.last)}})
+        </div>
+        
+        </div>
+    </div>
 </div>
 <div class="row">
-	<div class="col-md-8">
-		<div class="row">
-			<div class="col-md-6">
-				<div class="well">
-				Select TCRS Responses To View: <br/>
-					<select ng-model="iteration" ng-options="item for item in iterations" required="true">
-						<option value="">Select TCRS Responses To View</option>
-					</select>
-					
-					<button type="button" class="btn btn-success" data-ng-click="loadData()">Load Data</button>
-				</div>
-			</div>
-			<div class="col-md-6">
-				<div class="well">3</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-12">
-				<div class="well" ng-show="displayResults">
-				
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="well">
+                Select TCRS Responses To View: <br/>
+                    <select ng-model="iteration" ng-options="item for item in iterations" required="true">
+                        <option value="">Select TCRS Responses To View</option>
+                    </select>
+                    
+                    <button type="button" class="btn btn-success" data-ng-click="loadData()">Load Data</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="well">3</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="well" ng-show="displayResults">
+                
+                
+                <table>
 
-				
-				
-				<table>
-				
-				<th>
-				
-				
-				<td ng-repeat="header in headers track by $index" style="border-style: solid">
-				{{header}}
-				</td>
-				
-				</th>
-				
-				<tr ng-repeat="(user,responses) in responseData track by $index">
-				
-				
-				
-				
-				<td style="background-color:rgb(221, 255, 255)">
-				{{user}}
+                    <th>
 
-				</td>
-				
-				<td ng-repeat="response in responses track by $index" style="border-style: solid">
-				{{response.response}}
-				</td>
-				
 
-				
-				</tr>
-				
-				</table>
-				
-				TCRS details here</div>
-			</div>
+                        <td ng-repeat="header in headers track by $index" style="border-style: solid">
+                            {{header}}
+                        </td>
+                
+                    </th>
+                
+                    <tr ng-repeat="(user,responses) in responseData track by $index">
+                
+                
+                
+                
+                        <td style="background-color:rgb(221, 255, 255)">
+                            {{user}}
 
-		</div>
-		
-	</div>
-	<div class="col-md-4">
-		<div class="well"><canvas id="line-chart" width="200" height="200"></canvas>
-		</div>
-	</div>
+                        </td>
+                
+                        <td ng-repeat="response in responses track by $index" style="border-style: solid">
+                            {{response.response}}
+                        </td>
+                
+
+                
+                    </tr>
+                
+                </table>
+                
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+    <div class="col-md-4">
+        <div class="well"><canvas id="line-chart" width="200" height="200"></canvas>
+        </div>
+    </div>
 </div>
 <div class="row">
-	<div class="col-md-4">
-		<div class="well">Make a Note</div>
-	</div>
-	<div class="col-md-4">
-		<div class="well"></div>
-	</div>
-	<div class="col-md-4">
-		<div class="well"></div>
-	</div>
+    <div class="col-md-4">
+        <div class="well">Make a Note</div>
+    </div>
+    <div class="col-md-4">
+        <div class="well"></div>
+    </div>
+    <div class="col-md-4">
+        <div class="well"></div>
+    </div>
 </div>
 <div class="row">
-	<div class="col-md-4">
-		<div class="well">View All Notes</div>
-	</div>
-	<div class="col-md-4">
-		<div class="well"></div>
-	</div>
-	<div class="col-md-4">
-		<div class="well"></div>
-	</div>
+    <div class="col-md-4">
+        <div class="well">View All Notes</div>
+    </div>
+    <div class="col-md-4">
+        <div class="well"></div>
+    </div>
+    <div class="col-md-4">
+        <div class="well"></div>
+    </div>
 </div>
 
 
 
 
 
-			
+            
 {% endverbatim %}
-	</div>
+    </div>
 
 </body>
 
