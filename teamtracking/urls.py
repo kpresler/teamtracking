@@ -30,6 +30,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'tcrsquestions', views.TcrsQuestionViewSet);
 router.register(r'tcrsresponses', views.TcrsResponseViewSet);
+router.register(r'iterations', views.IterationViewSet);
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

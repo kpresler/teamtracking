@@ -12,8 +12,8 @@ from rest_framework.decorators import action
 from rest_framework import generics;
 
 
-from teamtracking.teamtracking.serializers import UserSerializer, GroupSerializer, TcrsQuestionSerializer, TcrsResponseSerializer;
-from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse;
+from teamtracking.teamtracking.serializers import UserSerializer, GroupSerializer, TcrsQuestionSerializer, TcrsResponseSerializer, IterationSerializer;
+from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse, Iteration;
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
@@ -43,6 +43,12 @@ class TcrsQuestionViewSet(viewsets.ModelViewSet):
     queryset = TcrsQuestion.objects.all();
     serializer_class = TcrsQuestionSerializer;
     permission_classes = [permissions.IsAuthenticated];
+    
+    
+class IterationViewSet(viewsets.ModelViewSet):
+    queryset = Iteration.objects.all();
+    serializer_class = IterationSerializer;
+    permission_classes = [permissions.IsAuthenticated];    
     
     
 class TcrsResponseViewSet(viewsets.ModelViewSet):
@@ -77,7 +83,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             full_response.section = tcrs_response['section'];
             full_response.team = tcrs_response['team'];
             full_response.submitter = tcrs_response['submitter'];
-            full_response.iteration = tcrs_response['iteration'];
+            full_response.iteration = Iteration.objects.filter(displayed_value=tcrs_response['iteration']).get();
             full_response.score = 0;
             
             """Is this a duplicate against one that has already been saved?  If so, skip it"""
@@ -167,14 +173,17 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         resp = {};
         
+        """MatchingResponses is all individual TCRS submissions....need to go through each one to pull in the associated questions"""
         for matchingResponse in matchingResponses:
             print("Looking for Question Responses for TCRS #" + str(matchingResponse['id']));
             
             respForUser = [];
             
+            """This pulls in the responses to individual questions"""
             individualResponses = TcrsQuestionResponse.objects.select_related().filter(fullResponse = matchingResponse['id']).all();
             print("Type of response:" + str(type(individualResponses)));
             for response in individualResponses:
+                """And finally prepare JSON data for the answer to each question"""
                 respForUser.append(response.responseToDictionary());
             resp[matchingResponse['submitter']] = respForUser;
         

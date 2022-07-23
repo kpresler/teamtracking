@@ -20,6 +20,15 @@ class TcrsQuestion(models.Model):
         return self.text;
     
     
+class Iteration(models.Model):
+    
+    displayed_value = models.CharField(max_length=5);
+    sequential_value = models.IntegerField();
+    
+    def __str__(self):
+        return "Iteration " + self.displayed_value + " (" + str(self.sequential_value) + ")";
+    
+    
 class TcrsResponse(models.Model):
     """Response to the TCRS for a specific student and specific week"""
     
@@ -29,13 +38,13 @@ class TcrsResponse(models.Model):
     section = models.CharField(max_length=10);
     team = models.CharField("Name or number of the student's team", max_length=20);
     submitter = models.CharField("Who submitted this response?", max_length=50);
-    iteration = models.CharField(max_length=5);
+    iteration = models.ForeignKey(to=Iteration, on_delete=models.PROTECT, null=False, blank=False);
     
     score = models.IntegerField();
 
 
     def __str__(self):
-        return "Response from " + self.submitter + " to iteration " + self.iteration + " on team " + self.section + "-" + self.team + " in " + self.course + " with a score of " + str(self.score);
+        return "Response from " + self.submitter + " to iteration " + str(self.iteration) + " on team " + self.section + "-" + self.team + " in " + self.course + " with a score of " + str(self.score);
 
     
 class TcrsQuestionResponse(models.Model):
@@ -59,7 +68,7 @@ class TcrsQuestionResponse(models.Model):
         return dictionary;
         
     
-    
+
 
 
 
