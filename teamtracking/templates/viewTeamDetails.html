@@ -16,6 +16,7 @@
 	integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
 	crossorigin="anonymous"></script>
 	
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 	
 <script src="https://kit.fontawesome.com/8b14d54041.js"
 	crossorigin="anonymous"></script>
@@ -51,6 +52,44 @@
 			    $scope.round = function(number){
 					return isNaN(number) ? number : number.toFixed(2);
 				}
+				
+				let loadChart = function (){
+				
+				
+				let datasets = [];
+				let colours = ["red", "green", "blue", "yellow", "purple", "orange", "black"];
+				var idx = 0;
+				
+				for (const [key, value] of Object.entries($scope.sentimentDetails)){
+				
+					datasets.push({
+						data: value,
+						label: key,
+					    borderColor: colours[idx],
+						fill: false	
+
+					});
+					idx++;
+				
+				}
+				
+				
+				new Chart(document.getElementById("line-chart"), {
+  type: 'line',
+  data: {
+    labels: $scope.sentimentLabels,
+    datasets: datasets
+  },
+  options: {
+    title: {
+      display: true,
+      text: 'Change in team sentiment over time'
+    },
+	spanGaps: true
+  }
+});
+
+}
 
 			    
 				$scope.displayTable = false;
@@ -71,6 +110,12 @@
 						$scope.headers = ($scope.responseData[Object.keys($scope.responseData)[0]].map(e => e.question));
 						
 						$scope.sentimentChange = response.data.sentimentChange;
+						
+						$scope.sentimentLabels = response.data.sentimentLabels;
+						
+						$scope.sentimentDetails = response.data.sentimentDetails;
+						
+						loadChart();
 						
 						$scope.displayResults = true;
 						
@@ -170,7 +215,7 @@
 		
 	</div>
 	<div class="col-md-4">
-		<div class="well">big-ass chart here showing sweet loot
+		<div class="well"><canvas id="line-chart" width="200" height="200"></canvas>
 		</div>
 	</div>
 </div>

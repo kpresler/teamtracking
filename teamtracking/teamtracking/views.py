@@ -170,6 +170,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         matchingResponses = TcrsResponse.objects.filter(course=course, section=section, team=team, iteration=iteration).values();
         
         
+        
+        """Compute a change in sentiment since last week, if the data exists"""
+        
         """Find matching responses from last week to compute a change in sentiment"""
         lastIteration = None;
         try:
@@ -201,6 +204,8 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         resp['sentimentChange'] = sentimentChange;
         
+        """End calculate change in sentiment"""
+        
 
         """Then, find responses to specific questions"""
 
@@ -221,6 +226,47 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             tcrsDetails[matchingResponse['submitter']] = respForUser;
             
         resp["tcrsDetails"] = tcrsDetails;
+        
+        
+        
+        """Get sentiment from each person for each week"""
+        
+        teamResponsesAllIterations = TcrsResponse.objects.filter(course=course, section=section, team=team).values();
+        
+        print("\n\n\n\n");
+        print(teamResponsesAllIterations);
+        print("\n\n\n\n");
+        
+        iterationsWithResponses = [x['iteration_id'] for x in teamResponsesAllIterations];
+        uniqueIterationIds = list(dict.fromkeys(iterationsWithResponses))
+        
+        uniqueIterations = [];
+        for iterationId in uniqueIterationIds:
+            uniqueIterations.append(Iteration.objects.filter(id=iterationId).get());
+        
+        uniqueIterations.sort(key=lambda x: x.sequential_value)
+        
+        resp["sentimentLabels"] = [x.displayed_value for x in uniqueIterations];
+        
+        
+        sentiments = dict();
+        
+        membersOfTeam = [x['submitter'] for x in teamResponsesAllIterations];
+        
+        for member in membersOfTeam:
+            responses = [];
+            for iteration in uniqueIterations:
+                try:
+                    response = TcrsResponse.objects.filter(course=course, section=section, team=team, iteration=iteration, submitter=member).get();
+                    responses.append(response.score);
+                except ObjectDoesNotExist:
+                    responses.append(None);
+            sentiments[member] = responses;
+        
+        
+        print(sentiments);
+        
+        resp["sentimentDetails"] = sentiments;
         
         sys.stdout.flush();
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);        
