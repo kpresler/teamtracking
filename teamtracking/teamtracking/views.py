@@ -162,15 +162,13 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         """First, go load in all matching TCRS responses"""
         section = request.data['section'];
         team = request.data['teamNumber'];
-        iteration = request.data['iteration'];
+        iteration = Iteration.objects.filter(displayed_value=request.data['iteration']).get();
         course = request.data['course'];
         matchingResponses = TcrsResponse.objects.filter(course=course, section=section, team=team, iteration=iteration).values();
 
 
         """Then, find responses to specific questions"""
-        
-        
-        
+                
         resp = {};
         
         """MatchingResponses is all individual TCRS submissions....need to go through each one to pull in the associated questions"""
