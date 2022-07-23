@@ -159,7 +159,6 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     @transaction.atomic
     def team_data(self, request):
-        
         resp = {};
 
         """First, go load in all matching TCRS responses"""
@@ -213,13 +212,12 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                        
         """MatchingResponses is all individual TCRS submissions....need to go through each one to pull in the associated questions"""
         for matchingResponse in matchingResponses:
-            print("Looking for Question Responses for TCRS #" + str(matchingResponse['id']));
+            #print("Looking for Question Responses for TCRS #" + str(matchingResponse['id']));
             
             respForUser = [];
             
             """This pulls in the responses to individual questions"""
             individualResponses = TcrsQuestionResponse.objects.select_related().filter(fullResponse = matchingResponse['id']).all();
-            print("Type of response:" + str(type(individualResponses)));
             for response in individualResponses:
                 """And finally prepare JSON data for the answer to each question"""
                 respForUser.append(response.responseToDictionary());
@@ -229,14 +227,27 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         
         
-        """Get sentiment from each person for each week"""
+        
+        sys.stdout.flush();
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);
+    
+    @action(detail=False, methods=['post'])
+    @transaction.atomic    
+    def team_sentiment_data(self,request):
+        
+        section = request.data['section'];
+        team = request.data['teamNumber'];
+        course = request.data['course'];
+                
+        resp = dict();
+        
+        
+        """Get sentiment from each person for each iteration"""
         
         teamResponsesAllIterations = TcrsResponse.objects.filter(course=course, section=section, team=team).values();
-        
-        print("\n\n\n\n");
-        print(teamResponsesAllIterations);
-        print("\n\n\n\n");
-        
+
+
+        """Get a list of iterations where we had at least one reply, and then sort them into ascending order so the chart comes out looking ok"""
         iterationsWithResponses = [x['iteration_id'] for x in teamResponsesAllIterations];
         uniqueIterationIds = list(dict.fromkeys(iterationsWithResponses))
         
@@ -248,9 +259,17 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         resp["sentimentLabels"] = [x.displayed_value for x in uniqueIterations];
         
+        """Now, fetch sentiment details for each member of the team.  The JSON format we want is:
+        {
+           "member1": [array-of-values],
+           "member2": [array-of-values],
+           ...
+        }
+        
+        In cases where they forgot to submit an iteration for the week, stick a `None` in the list in the appropriate slot; the charting is configured to skip over missing values and will handle it.
+        """
         
         sentiments = dict();
-        
         membersOfTeam = [x['submitter'] for x in teamResponsesAllIterations];
         
         for member in membersOfTeam:
@@ -262,11 +281,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                 except ObjectDoesNotExist:
                     responses.append(None);
             sentiments[member] = responses;
-        
-        
-        print(sentiments);
-        
+ 
         resp["sentimentDetails"] = sentiments;
+        
         
         sys.stdout.flush();
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);        

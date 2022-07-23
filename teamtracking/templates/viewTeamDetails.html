@@ -53,7 +53,7 @@
 					return isNaN(number) ? number : number.toFixed(2);
 				}
 				
-				let loadChart = function (){
+				let displayChart = function (){
 				
 				
 				let datasets = [];
@@ -91,11 +91,31 @@
 
 }
 
+
+				$scope.loadChart = function (){
+					let submit = {};
+					submit.section = $scope.section;
+					submit.teamNumber = $scope.teamNumber;
+					submit.course = $scope.course;
+      				
+					$http.post("api/tcrsresponses/team_sentiment_data/", submit).then(function(response) {
+						$scope.sentimentLabels = response.data.sentimentLabels;				
+						$scope.sentimentDetails = response.data.sentimentDetails;
+						
+						displayChart();
+						
+				    }, function(error){
+				        console.log(error);
+				    });
+				
+				}
+
+
 			    
-				$scope.displayTable = false;
+				$scope.displayResults = false;
 				
 				$scope.loadData = function(){
-					$scope.displayTable = false;				
+					$scope.displayResults = false;				
 
 					let submit = {};
 					submit.section = $scope.section;
@@ -111,18 +131,14 @@
 						
 						$scope.sentimentChange = response.data.sentimentChange;
 						
-						$scope.sentimentLabels = response.data.sentimentLabels;
-						
-						$scope.sentimentDetails = response.data.sentimentDetails;
-						
-						loadChart();
-						
 						$scope.displayResults = true;
 						
 				    }, function(error){
 				        console.log(error);
 				    });
 				}
+				
+				$scope.loadChart();
 			});
 			
 
