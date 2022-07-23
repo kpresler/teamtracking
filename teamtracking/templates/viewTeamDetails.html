@@ -47,12 +47,15 @@
 			
 			    $scope.iterations = ['0', '1A', '1B', '2A', '5'];
 				
-				
-			
+							
 
 			    
+				$scope.displayTable = false;
+				
 				$scope.loadData = function(){
-				    let submit = {};
+					$scope.displayTable = false;				
+
+					let submit = {};
 					submit.section = $scope.section;
 					submit.teamNumber = $scope.teamNumber;
 					submit.iteration = $scope.iteration;
@@ -60,6 +63,12 @@
       				
 					$http.post("api/tcrsresponses/team_data/", submit).then(function(response) {
 					    console.log(response);
+						$scope.responseData = response.data;
+						/* Retrieve the text of all questions that were answered to use as headers for the table */
+						$scope.headers = ($scope.responseData[Object.keys($scope.responseData)[0]].map(e => e.question));
+						
+						$scope.displayTable = true;
+						
 				    }, function(error){
 				        console.log(error);
 				    });
@@ -71,6 +80,8 @@
 	</script>
 
 	<div ng-app="myApp" ng-controller="teamDetailsCtrl" class="container">
+	
+{% verbatim %}
 		
 		<h3>View Team Details</h3>
 		
@@ -104,7 +115,43 @@
 		</div>
 		<div class="row">
 			<div class="col-md-12">
-				<div class="well">TCRS details here</div>
+				<div class="well" ng-show="displayTable">
+				
+
+				
+				
+				<table>
+				
+				<th>
+				
+				
+				<td ng-repeat="header in headers track by $index" style="border-style: solid">
+				{{header}}
+				</td>
+				
+				</th>
+				
+				<tr ng-repeat="(user,responses) in responseData track by $index">
+				
+				
+				
+				
+				<td style="background-color:rgb(221, 255, 255)">
+				{{user}}
+
+				</td>
+				
+				<td ng-repeat="response in responses track by $index" style="border-style: solid">
+				{{response.response}}
+				</td>
+				
+
+				
+				</tr>
+				
+				</table>
+				
+				TCRS details here</div>
 			</div>
 
 		</div>
@@ -143,6 +190,7 @@
 <button type="button" class="btn btn-success" data-ng-click="loadData()">Load Data</button>
 
 			
+{% endverbatim %}
 	</div>
 
 </body>
