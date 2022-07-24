@@ -318,6 +318,47 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         sys.stdout.flush();
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);          
         
+        
+        
+    @action(detail=False, methods=['post'])
+    @transaction.atomic        
+    def matching_teams(self, request):
+        
+        runningLookup = TcrsResponse.objects;
+        
+        course = request.data.get("course");
+        
+        
+        if course:
+            print("Filtering on course = " + str(course));
+            runningLookup = runningLookup.filter(course__in=course);
+        
+        section = request.data.get("section");
+        print(section);
+        if section:
+            print("Filtering on section = " + str(section));
+            runningLookup = runningLookup.filter(section__in=section);
+        
+        team = request.data.get("team");
+        
+        if team:
+            print("Filtering on team = " + str(team));
+            runningLookup = runningLookup.filter(team__in=team);
+        
+        
+        matchingResponses = runningLookup.all();
+        
+        resp = dict();
+        
+        resp["course"] = list(set([x.course for x in matchingResponses]));
+        
+        resp["section"] = list(set([x.section for x in matchingResponses]));
+        
+        resp["team"] = list(set([x.team for x in matchingResponses]));
+        
+        
+        sys.stdout.flush();
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);            
 #end class
     
     
@@ -330,3 +371,6 @@ def index(request):
 
 def teamDetails(request):
     return render(request,"viewTeamDetails.html");
+
+def summary(request):
+    return render(request, "summary.html");

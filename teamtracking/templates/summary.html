@@ -1,0 +1,174 @@
+<html>
+   <head>
+        <title>Team Summary View</title>
+<script
+    src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+        
+<link data-require="bootstrap-css@2.3.2" data-semver="2.3.2" rel="stylesheet" href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" />
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    
+<script src="https://kit.fontawesome.com/8b14d54041.js"
+    crossorigin="anonymous"></script>
+	
+	<script src="static/teamtracking/multiselect.js"></script>
+    
+    <style>
+		
+		multiselect {
+    display:block;
+}
+multiselect .btn {
+    width: 100%;
+    background-color: #FFF;
+}
+multiselect .btn.error{
+    border: 1px solid #da4f49 !important;
+}
+multiselect .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+multiselect .dropdown-menu {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 2px;
+}
+multiselect .dropdown-menu > li > a {
+    padding: 3px 10px;
+    cursor:pointer;
+}
+    </style>
+    
+</head>
+<body>
+
+
+    <script>
+            /*<![CDATA[*/
+
+            var app = angular.module('myApp', ['ui.multiselect']);
+            
+            app.config(['$httpProvider', function($httpProvider) {
+                $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+            }]);
+            
+            app.controller('teamSummaryCtrl', function($scope, $http) {
+				$scope.name = 'World';
+
+				
+				$scope.courses = [];
+				$scope.sections = [];
+				$scope.teams = [];
+								
+				$scope.loadC = function(){
+					loadTeams(true,false,false);
+				
+				}
+				
+				$scope.loadS = function(){
+					loadTeams(false,true,false);
+				
+				}
+				
+				$scope.loadT = function(){
+					loadTeams(false,false,true);
+				}
+				
+				
+	
+				let loadTeams = function(skipCourse, skipSection, skipTeam){
+
+					let submit = {};
+					submit.course = $scope.selectedCourse;
+					submit.section = $scope.selectedSection;
+					submit.team = $scope.selectedTeam;
+					
+					console.log("Requesting:");
+					console.log(submit);
+	
+	
+					$http.post("api/tcrsresponses/matching_teams/", submit).then(function(response){
+						console.log(response);
+						if(!skipCourse)$scope.courses = response.data.course;
+						if(!skipSection)$scope.sections = response.data.section;
+						if(!skipTeam)$scope.teams = response.data.team;
+					
+					},
+					function(rejection){
+						console.log(rejection);
+					
+					});
+	
+				}
+				
+				
+				loadTeams(false,false,false);
+				
+
+                
+            });
+            
+
+            /*]]>*/
+    </script>
+
+    <div ng-app="myApp" ng-controller="teamSummaryCtrl" class="container">
+    
+    {% verbatim %}
+        
+        <h3>View Team Details</h3>
+		
+		
+		<div class="row">
+		
+			<div class="span4">
+					
+				Filter by course:
+				<multiselect class="input-xlarge" multiple="true"
+					ng-model="selectedCourse"
+					options="c for c in courses"
+					change="selected(); loadC()" >
+				</multiselect>
+			
+			</div>
+			
+			<div class="span4">
+					
+				Filter by section:
+				<multiselect class="input-xlarge" multiple="true"
+					ng-model="selectedSection"
+					options="s for s in sections"
+					change="selected(); loadS()" >
+				</multiselect>
+			
+			</div>
+			
+			
+			<div class="span4">
+					
+				Filter by team:
+				<multiselect class="input-xlarge" multiple="true"
+					ng-model="selectedTeam"
+					options="t for t in teams"
+					change="selected(); loadT()" >
+				</multiselect>
+			
+			</div>
+		
+		
+		</div>
+		
+        
+
+	{% endverbatim %}
+            
+
+    </div>
+
+</body>
+
+
+</html>

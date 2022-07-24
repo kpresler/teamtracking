@@ -40,4 +40,6 @@ urlpatterns = [
     path("loadTCRS", views.loadTCRS, name="loadTCRS"),
     path("", views.index, name="index"),
     path("viewTeamDetails", views.teamDetails, name="viewTeamDetails"),
+    path("viewSummary", views.summary, name="viewSummary"),
+    
 ]
