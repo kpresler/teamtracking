@@ -78,6 +78,19 @@ multiselect .dropdown-menu > li > a {
 				}
 				
 				
+				$scope.loadIterations = function (){
+                    
+                      
+                    $http.get("api/iterations/?format=json").then(function(response) {
+                        $scope.iterations = response.data.results;                
+                    }, function(error){
+                        console.log(error);
+                    });
+                }
+				
+				$scope.loadIterations();
+				
+				
 	
 				let loadTeams = function(skipCourse, skipSection, skipTeam){
 
@@ -95,6 +108,7 @@ multiselect .dropdown-menu > li > a {
 						if(!skipCourse)$scope.courses = response.data.course;
 						if(!skipSection)$scope.sections = response.data.section;
 						if(!skipTeam)$scope.teams = response.data.team;
+						if ($scope.iteration != undefined) $scope.loadDetails();
 					
 					},
 					function(rejection){
@@ -104,9 +118,38 @@ multiselect .dropdown-menu > li > a {
 	
 				}
 				
+				/* Loads in detailed responses based on the filters applied */
+				$scope.loadDetails = function(){
+				
+					$scope.dataLoaded = false;
+				
+					let submit = {};
+					submit.course = $scope.selectedCourse;
+					submit.section = $scope.selectedSection;
+					submit.team = $scope.selectedTeam;
+					submit.iteration = $scope.iteration.displayed_value;
+
+	
+					$http.post("api/tcrsresponses/team_summary/", submit).then(function(response){
+						$scope.details = response.data;
+						$scope.dataLoaded = true;
+					
+					},
+					function(rejection){
+						console.log(rejection);
+					
+					});
+	
+				
+				
+				
+				}
+				
 				
 				loadTeams(false,false,false);
 				
+				
+				$scope.dataLoaded = false;
 
                 
             });
@@ -124,7 +167,19 @@ multiselect .dropdown-menu > li > a {
 		
 		<div class="row">
 		
-			<div class="span4">
+			<div class="span3">
+				Choose an iteration (required):
+				<select ng-model="iteration"
+					ng-options="item as item.displayed_value for item in iterations"
+					required="true">
+					<option value=""></option>
+				</select>
+				
+				<button type="button" class="btn btn-success" data-ng-click="loadDetails()">Go!</button>
+				
+			</div>
+		
+			<div class="span3">
 					
 				Filter by course:
 				<multiselect class="input-xlarge" multiple="true"
@@ -135,7 +190,7 @@ multiselect .dropdown-menu > li > a {
 			
 			</div>
 			
-			<div class="span4">
+			<div class="span3">
 					
 				Filter by section:
 				<multiselect class="input-xlarge" multiple="true"
@@ -147,7 +202,7 @@ multiselect .dropdown-menu > li > a {
 			</div>
 			
 			
-			<div class="span4">
+			<div class="span3">
 					
 				Filter by team:
 				<multiselect class="input-xlarge" multiple="true"
@@ -157,8 +212,60 @@ multiselect .dropdown-menu > li > a {
 				</multiselect>
 			
 			</div>
+			
+		</div>
+	
+		<div ng-show="dataLoaded">
+		
+	
+			<div class="row">
+			
+				<h5>Struggling Teams This Week:</h5>
+			
+				<div class="span3">
+			
+					<div ng-repeat="(team, score) in details.strugglingTeams track by $index">
+						Team: {{team}} => Score: {{score}}:<br />
+	
+					</div>
+			
+				</div>
+	
+			</div>
 		
 		
+			<div class="row">
+			
+				<h5>Largest Improvement This Week:</h5>
+			
+				<div class="span3">
+			
+					<div ng-repeat="(team, score) in details.improvement track by $index">
+						Team: {{team}} => Change: {{score}}:<br />
+	
+					</div>
+			
+				</div>		
+		
+			</div>
+			
+			<div class="row">
+			
+				<h5>Largest Drop This Week:</h5>
+			
+				<div class="span3">
+			
+					<div ng-repeat="(team, score) in details.drop track by $index">
+						Team: {{team}} => Change: {{score}}:<br />
+	
+					</div>
+			
+				</div>		
+		
+			</div>			
+
+			
+			
 		</div>
 		
         

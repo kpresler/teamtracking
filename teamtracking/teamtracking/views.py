@@ -114,18 +114,19 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                     question_response.fullResponse = full_response;
                     question_response.save();
                     scoreFromQuestion = 0;
+                    """Have to check disagree first...otherwise it find "agree" as a substring in disagree and does stupid stuff.  Want to guess how we figured out this one? :) """
                     if matching_question.qType == "p":
-                        if "agree" in response.lower():
-                            scoreFromQuestion = 2;
-                        elif "disagree" in response.lower():
+                        if "disagree" in response.lower():
                             scoreFromQuestion = -2;
+                        elif "agree" in response.lower():
+                            scoreFromQuestion = 2;
                         if "strongly" in response.lower():
                             scoreFromQuestion *= 2;
                     elif matching_question.qType == "n":
-                        if "agree" in response.lower():
-                            scoreFromQuestion = -2;
-                        elif "disagree" in response.lower():
+                        if "disagree" in response.lower():
                             scoreFromQuestion = 2;
+                        elif "agree" in response.lower():
+                            scoreFromQuestion = -2;
                         if "strongly" in response.lower():
                             scoreFromQuestion *=2;
                     elif matching_question.qType == "t" and not response.strip():
@@ -358,7 +359,150 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         
         
         sys.stdout.flush();
-        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);            
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);    
+    
+    
+    
+    @action(detail=False, methods=['post'])
+    @transaction.atomic      
+    def team_summary(self, request):
+        
+        resp = dict();
+        
+        runningLookup = TcrsResponse.objects;
+        
+        course = request.data.get("course");
+        
+        
+        if course:
+            print("Filtering on course = " + str(course));
+            runningLookup = runningLookup.filter(course__in=course);
+        
+        section = request.data.get("section");
+        print(section);
+        if section:
+            print("Filtering on section = " + str(section));
+            runningLookup = runningLookup.filter(section__in=section);
+        
+        team = request.data.get("team");
+        
+        if team:
+            print("Filtering on team = " + str(team));
+            runningLookup = runningLookup.filter(team__in=team);
+        
+        
+        iteration = request.data.get("iteration");
+               
+        it = Iteration.objects.filter(displayed_value=iteration).get();
+        
+        lookupWithoutIteration = runningLookup;
+        
+        runningLookup = runningLookup.filter(iteration=it);
+        
+        matchingResponses = runningLookup.all();
+        
+        scoresPerTeam = dict();
+        
+        
+        
+        
+        #First, calculate how many struggling teams we have -- this is the number of teams where at least one member's response has a score <= 0
+        for response in matchingResponses:
+            # python is dumb and throws a fit if you try to use either an object or a tuple as a key, so we have to use this hack and then un-hack it (re-hack?) in the JS.  
+            key = "{}-{}-{}".format(response.course, response.section, response.team);
+            
+            if key not in scoresPerTeam:
+                scoresPerTeam[key] = [];
+            
+            scoresPerTeam[key].append(response.score);
+            
+        
+        teamsWithNeg = dict();
+        
+        for team in scoresPerTeam:
+            scores = scoresPerTeam[team];
+            lowestScore = sorted(scores)[0];
+            if (lowestScore <= 0):
+                teamsWithNeg[team] = lowestScore;
+                
+        
+        averageScorePerTeam = dict();
+        
+        for team in scoresPerTeam:
+            scores = scoresPerTeam[team];
+            avgScore = sum(scores)/len(scores);
+            averageScorePerTeam[team] = avgScore;
+            
+            
+    
+        # If there are responses for a previous week, go calculate teams that have seen the biggest improvement and ones that have seen the biggest drop.
+        # Note, that while the flagging ^ above uses individual scores, this uses team-level scores.  This might be worth revisiting in the future 
+        
+        if it.sequential_value != 0:
+            
+            lastIteration = Iteration.objects.filter(sequential_value = it.sequential_value-1).get();
+            
+            responsesLastIteration = lookupWithoutIteration.filter(iteration=lastIteration).all();
+        
+            lastIterationScoresPerTeam = dict();
+        
+        
+            for response in responsesLastIteration:
+                # python is dumb and throws a fit if you try to use either an object or a tuple as a key, so we have to use this hack and then un-hack it (re-hack?) in the JS.  
+                key = "{}-{}-{}".format(response.course, response.section, response.team);
+                
+                if key not in lastIterationScoresPerTeam:
+                    lastIterationScoresPerTeam[key] = [];
+                
+                lastIterationScoresPerTeam[key].append(response.score);   
+                
+                
+            lastIterationAverageScorePerTeam = dict();
+                
+            for team in lastIterationScoresPerTeam:
+                scores = lastIterationScoresPerTeam[team];
+                avgScore = sum(scores)/len(scores);
+                lastIterationAverageScorePerTeam[team] = avgScore;      
+                    
+                    
+            scoreChanges = dict();
+                    
+            # Now, go compute changes vs last week:
+            for team in averageScorePerTeam:
+                scoreThisWeek = averageScorePerTeam[team];
+                scoreLastWeek = lastIterationAverageScorePerTeam.get(team);
+                
+                print("    " + str(team));
+                print("    Last week score: " + str(scoreLastWeek));
+                print("    This week score: " + str(scoreThisWeek));
+                
+                diff = None;
+                if scoreLastWeek:
+                    diff = scoreThisWeek - scoreLastWeek;
+        
+                if diff:
+                    scoreChanges[team] = diff;
+                    
+            print("Score changes");
+            print(scoreChanges);
+        
+            mostImproved = {team: scoreChanges[team] for team in sorted(scoreChanges) if scoreChanges[team] > 3}
+            
+            mostDrop = {team: scoreChanges[team] for team in sorted(scoreChanges) if scoreChanges[team] < -3}
+
+            resp["improvement"] = mostImproved;
+            resp["drop"] = mostDrop;
+      
+        
+        resp["strugglingTeams"] = teamsWithNeg;
+
+        
+        
+        print (resp);
+        
+        sys.stdout.flush();
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK);  
+    
 #end class
     
     
