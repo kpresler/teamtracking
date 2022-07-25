@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 ]
 
 
@@ -26,20 +26,19 @@ from rest_framework import routers
 from teamtracking.teamtracking import views
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
-router.register(r'tcrsquestions', views.TcrsQuestionViewSet);
-router.register(r'tcrsresponses', views.TcrsResponseViewSet);
-router.register(r'iterations', views.IterationViewSet);
+router.register(r"users", views.UserViewSet)
+router.register(r"groups", views.GroupViewSet)
+router.register(r"tcrsquestions", views.TcrsQuestionViewSet)
+router.register(r"tcrsresponses", views.TcrsResponseViewSet)
+router.register(r"iterations", views.IterationViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path("api/", include(router.urls)),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("loadTCRS", views.loadTCRS, name="loadTCRS"),
     path("", views.index, name="index"),
     path("viewTeamDetails", views.teamDetails, name="viewTeamDetails"),
     path("viewSummary", views.summary, name="viewSummary"),
-    
 ]

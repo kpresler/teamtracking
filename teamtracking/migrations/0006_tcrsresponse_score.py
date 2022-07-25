@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('teamtracking', '0005_alter_tcrsresponse_iteration'),
+        ("teamtracking", "0005_alter_tcrsresponse_iteration"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tcrsresponse',
-            name='score',
+            model_name="tcrsresponse",
+            name="score",
             field=models.IntegerField(default=-500),
             preserve_default=False,
         ),

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('teamtracking', '0001_initial'),
+        ("teamtracking", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tcrsquestion',
-            name='active',
-            field=models.BooleanField(verbose_name='Is this question currently active?'),
+            model_name="tcrsquestion",
+            name="active",
+            field=models.BooleanField(
+                verbose_name="Is this question currently active?"
+            ),
         ),
     ]

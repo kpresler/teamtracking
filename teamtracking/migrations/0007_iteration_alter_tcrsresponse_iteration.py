@@ -7,21 +7,31 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('teamtracking', '0006_tcrsresponse_score'),
+        ("teamtracking", "0006_tcrsresponse_score"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Iteration',
+            name="Iteration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('displayed_value', models.CharField(max_length=5)),
-                ('sequential_value', models.IntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("displayed_value", models.CharField(max_length=5)),
+                ("sequential_value", models.IntegerField()),
             ],
         ),
         migrations.AlterField(
-            model_name='tcrsresponse',
-            name='iteration',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='teamtracking.iteration'),
+            model_name="tcrsresponse",
+            name="iteration",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="teamtracking.iteration"
+            ),
         ),
     ]

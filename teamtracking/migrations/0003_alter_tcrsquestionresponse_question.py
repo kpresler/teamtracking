@@ -7,13 +7,16 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('teamtracking', '0002_alter_tcrsquestion_active'),
+        ("teamtracking", "0002_alter_tcrsquestion_active"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tcrsquestionresponse',
-            name='question',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='teamtracking.tcrsquestion'),
+            model_name="tcrsquestionresponse",
+            name="question",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                to="teamtracking.tcrsquestion",
+            ),
         ),
     ]

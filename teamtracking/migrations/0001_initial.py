@@ -8,43 +8,124 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Note',
+            name="Note",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TcrsQuestion',
+            name="TcrsQuestion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=200, verbose_name='Question text')),
-                ('qType', models.CharField(choices=[('p', 'Positive'), ('n', 'Negative'), ('t', 'Text'), ('o', 'Other')], max_length=1)),
-                ('active', models.BooleanField(verbose_name='Whether this question is currently active in the current version of the TCRS, or exists only as a historical artifact')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "text",
+                    models.CharField(max_length=200, verbose_name="Question text"),
+                ),
+                (
+                    "qType",
+                    models.CharField(
+                        choices=[
+                            ("p", "Positive"),
+                            ("n", "Negative"),
+                            ("t", "Text"),
+                            ("o", "Other"),
+                        ],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "active",
+                    models.BooleanField(
+                        verbose_name="Whether this question is currently active in the current version of the TCRS, or exists only as a historical artifact"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TcrsResponse',
+            name="TcrsResponse",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('submit_date', models.DateTimeField(verbose_name='Submission date')),
-                ('course', models.CharField(max_length=10)),
-                ('section', models.CharField(max_length=10)),
-                ('team', models.CharField(max_length=20, verbose_name="Name or number of the student's team")),
-                ('submitter', models.CharField(max_length=50, verbose_name='Who submitted this response?')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("submit_date", models.DateTimeField(verbose_name="Submission date")),
+                ("course", models.CharField(max_length=10)),
+                ("section", models.CharField(max_length=10)),
+                (
+                    "team",
+                    models.CharField(
+                        max_length=20,
+                        verbose_name="Name or number of the student's team",
+                    ),
+                ),
+                (
+                    "submitter",
+                    models.CharField(
+                        max_length=50, verbose_name="Who submitted this response?"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TcrsQuestionResponse',
+            name="TcrsQuestionResponse",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('response', models.CharField(max_length=1000, verbose_name='Response to question')),
-                ('fullResponse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='responses', to='teamtracking.tcrsresponse')),
-                ('question', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, to='teamtracking.tcrsquestion')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "response",
+                    models.CharField(
+                        max_length=1000, verbose_name="Response to question"
+                    ),
+                ),
+                (
+                    "fullResponse",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="responses",
+                        to="teamtracking.tcrsresponse",
+                    ),
+                ),
+                (
+                    "question",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="teamtracking.tcrsquestion",
+                    ),
+                ),
             ],
         ),
     ]
