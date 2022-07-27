@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -102,4 +103,20 @@ class TcrsQuestionResponse(models.Model):
 class Note(models.Model):
     """Represents an observation/note about a team's performance, or a followup requested"""
 
-    pass
+    note_text = models.CharField(max_length=1000)
+
+    submit_date = models.DateTimeField("Note date")
+
+    submitter = models.ForeignKey(
+        to=User,
+        on_delete=models.PROTECT,
+        related_name="submitter",
+        null=False,
+        blank=False,
+    )
+
+    course = models.CharField(max_length=10)
+    section = models.CharField(max_length=10)
+    team = models.CharField("Name or number of the student's team", max_length=20)
+
+    # TODO: At some point, extract the (course, section, team) into a Team object & reference that from this and the TcrsResponse.

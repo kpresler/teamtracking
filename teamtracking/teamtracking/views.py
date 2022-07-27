@@ -19,8 +19,9 @@ from teamtracking.teamtracking.serializers import (
     TcrsQuestionSerializer,
     TcrsResponseSerializer,
     IterationSerializer,
+    NoteSerializer,
 )
-from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse, Iteration
+from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse, Iteration, Note
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
@@ -59,6 +60,36 @@ class IterationViewSet(viewsets.ModelViewSet):
     queryset = Iteration.objects.all()
     serializer_class = IterationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class NoteViewSet(viewsets.ModelViewSet):
+    queryset = Note.objects.all()
+    serializer_class = NoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False, methods=["post"])
+    @transaction.atomic
+    def new_note(self, request):
+        """DRF will magic up a POST method for us already, but this lets us specify how we want some of the fields to be filled in"""
+
+        note = Note()
+
+        note.note_text = request.data["text"]
+        note.course = request.data["course"]
+        note.section = request.data["section"]
+        note.team = request.data["team"]
+        note.submit_date = datetime.now()
+        note.submitter = request.user
+
+        note.save()
+
+        return JsonResponse(
+            "Note for {}-{}-{} created successfully".format(
+                note.course, note.section, note.team
+            ),
+            safe=False,
+            status=status.HTTP_200_OK,
+        )
 
 
 class TcrsResponseViewSet(viewsets.ModelViewSet):

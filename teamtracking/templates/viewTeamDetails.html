@@ -56,6 +56,8 @@
                 $scope.section = "a";
                 $scope.teamNumber = "5";
                 $scope.course = "CSCI 2335";
+				
+				$scope.creatingNote = false;
             
               
                
@@ -161,6 +163,44 @@
                         console.log(error);
                     });
                 }
+				
+				$scope.showCreateNote = function(){
+				
+					$scope.creatingNote = true;
+				
+				
+				}
+				
+				
+				
+				$scope.submitNote = function (){
+				
+					let submit = {};
+					
+				    submit.section = $scope.section;
+                    submit.team = $scope.teamNumber;
+                    submit.iteration = $scope.iteration;
+                    submit.course = $scope.course;
+					submit.text = $scope.noteText;
+					
+					$http.post("api/notes/new_note/", submit).then(function(response){
+						console.log(response);
+						$scope.creatingNote = false;
+						$scope.noteText = "";
+					
+					
+					}, function (error){
+						console.log(error);
+						$scope.creatingNote = false;
+					
+					});
+				
+				}
+				
+				$scope.resetNote = function(){
+					$scope.noteText = "";
+				
+				}
                 
                 $scope.loadChart();
             });
@@ -259,7 +299,22 @@
 </div>
 <div class="row">
     <div class="col-md-4">
-        <div class="well">Make a Note</div>
+        <div class="well">
+		<button type="button" class="btn btn-success" data-ng-click="showCreateNote()">Create Note</button>
+		
+		<div ng-show="creatingNote">
+		
+		
+			<textarea name="noteText" rows="4" cols="50" ng-model="noteText">
+			
+			</textarea>
+		
+		
+			<button type="button" class="btn btn-success" data-ng-click="submitNote()">Submit Note</button>
+			<button type="button" class="btn btn-warning" data-ng-click="resetNote()">Reset Note</button>
+		
+		</div>
+		
     </div>
     <div class="col-md-4">
         <div class="well"></div>
