@@ -21,7 +21,14 @@ from teamtracking.teamtracking.serializers import (
     IterationSerializer,
     NoteSerializer,
 )
-from .models import TcrsQuestion, TcrsResponse, TcrsQuestionResponse, Iteration, Note
+from .models import (
+    TcrsQuestion,
+    TcrsResponse,
+    TcrsQuestionResponse,
+    Iteration,
+    Note,
+    Team,
+)
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
@@ -74,19 +81,21 @@ class NoteViewSet(viewsets.ModelViewSet):
 
         note = Note()
 
+        team = Team.objects.filter(
+            course=request.data["course"],
+            section=request.data["section"],
+            team=request.data["team"],
+        ).get()
+
         note.note_text = request.data["text"]
-        note.course = request.data["course"]
-        note.section = request.data["section"]
-        note.team = request.data["team"]
+        note.team = team
         note.submit_date = datetime.now()
         note.submitter = request.user
 
         note.save()
 
         return JsonResponse(
-            "Note for {}-{}-{} created successfully".format(
-                note.course, note.section, note.team
-            ),
+            "Note for {} created successfully".format(note.team),
             safe=False,
             status=status.HTTP_200_OK,
         )
@@ -99,7 +108,9 @@ class NoteViewSet(viewsets.ModelViewSet):
         team = request.data["team"]
 
         matching = (
-            Note.objects.filter(course=course, section=section, team=team)
+            Note.objects.filter(
+                team__course=course, team__section=section, team__team=team
+            )
             .order_by("-submit_date")
             .all()
         )
@@ -108,7 +119,7 @@ class NoteViewSet(viewsets.ModelViewSet):
 
         for note in matching:
             """Derpy JSON serialisation hurting us again..."""
-            resp.append(note.noteToDictionary())
+            resp.append(note.toDict())
 
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
 
@@ -137,12 +148,31 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         for tcrs_response in request.data:
             print(tcrs_response)
 
+            try:
+                print(
+                    "Searching for a team matching {}-{}-{}".format(
+                        tcrs_response["course"],
+                        tcrs_response["section"],
+                        tcrs_response["team"],
+                    )
+                )
+                team = Team.objects.filter(
+                    course=tcrs_response["course"],
+                    section=tcrs_response["section"],
+                    team=tcrs_response["team"],
+                ).get()
+            except ObjectDoesNotExist:
+                print("Matching team not found -- creating!")
+                team = Team()
+                team.course = tcrs_response["course"]
+                team.section = tcrs_response["section"]
+                team.team = tcrs_response["team"]
+                team.save()
+
             """Fill in response that is tracked across the entire TCRS response"""
             full_response = TcrsResponse()
             full_response.submit_date = datetime.now()
-            full_response.course = tcrs_response["course"]
-            full_response.section = tcrs_response["section"]
-            full_response.team = tcrs_response["team"]
+            full_response.team = team
             full_response.submitter = tcrs_response["submitter"]
             full_response.iteration = Iteration.objects.filter(
                 displayed_value=tcrs_response["iteration"]
@@ -151,9 +181,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
             """Is this a duplicate against one that has already been saved?  If so, skip it"""
             possiblyMatching = TcrsResponse.objects.filter(
-                course=full_response.course,
-                section=full_response.section,
-                team=full_response.team,
+                team=team,
                 iteration=full_response.iteration,
                 submitter=full_response.submitter,
             )
@@ -166,7 +194,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
             response_score = 0
 
-            """Traverse over all of the responses to individual questions"""
+            # Traverse over all of the responses to individual questions
             for (question, response) in tcrs_response.items():
                 print(question + "::" + response)
                 matchingQuestions = [
@@ -182,7 +210,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                     question_response.fullResponse = full_response
                     question_response.save()
                     scoreFromQuestion = 0
-                    """Have to check disagree first...otherwise it find "agree" as a substring in disagree and does stupid stuff.  Want to guess how we figured out this one? :) """
+                    # Have to check disagree first...otherwise it find "agree" as a substring in disagree and does stupid stuff.  Want to guess how we figured out this one? :)
                     if matching_question.qType == "p":
                         if "disagree" in response.lower():
                             scoreFromQuestion = -2
@@ -198,11 +226,11 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                         if "strongly" in response.lower():
                             scoreFromQuestion *= 2
                     elif matching_question.qType == "t" and not response.strip():
-                        """Text questions are natural language processed, as long as they exist :magier:"""
+                        # Text questions are natural language processed, as long as they exist :magier:
                         sentiment_scores = sid.polarity_scores(response)
-                        """TODO: These magic numbers seem to work decently well but could stand to be revisited"""
+                        # TODO: These magic numbers seem to work decently well but could stand to be revisited
                         if ss["neg"] > 0 and ss["pos"] < 0.5:
-                            """kekw.  this is a way to force the score into negative if it's flagged through the natural language parser"""
+                            # kekw.  this is a way to force the score into negative if it's flagged through the natural language parser
                             scoreFromQuestion -= 100
                         # endif
                     # end elif
@@ -237,7 +265,10 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         ).get()
         course = request.data["course"]
         matchingResponses = TcrsResponse.objects.filter(
-            course=course, section=section, team=team, iteration=iteration
+            team__course=course,
+            team__section=section,
+            team__team=team,
+            iteration=iteration,
         ).values()
 
         """Compute a change in sentiment since last week, if the data exists"""
@@ -254,7 +285,10 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         responsesLastIteration = None
         if lastIteration:
             responsesLastIteration = TcrsResponse.objects.filter(
-                course=course, section=section, team=team, iteration=lastIteration
+                team__course=course,
+                team__section=section,
+                team__team=team,
+                iteration=lastIteration,
             ).values()
 
         scoresThisWeek = [x["score"] for x in matchingResponses]
@@ -294,7 +328,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             )
             for response in individualResponses:
                 """And finally prepare JSON data for the answer to each question"""
-                respForUser.append(response.responseToDictionary())
+                respForUser.append(response.toDict())
             tcrsDetails[matchingResponse["submitter"]] = respForUser
 
         resp["tcrsDetails"] = tcrsDetails
@@ -315,7 +349,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         """Get sentiment from each person for each iteration"""
 
         teamResponsesAllIterations = TcrsResponse.objects.filter(
-            course=course, section=section, team=team
+            team__course=course, team__section=section, team__team=team
         ).values()
 
         """Get a list of iterations where we had at least one reply, and then sort them into ascending order so the chart comes out looking ok"""
@@ -350,9 +384,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             for iteration in uniqueIterations:
                 try:
                     response = TcrsResponse.objects.filter(
-                        course=course,
-                        section=section,
-                        team=team,
+                        team__course=course,
+                        team__section=section,
+                        team__team=team,
                         iteration=iteration,
                         submitter=member,
                     ).get()
@@ -378,7 +412,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         """Get sentiment from each person for each iteration"""
 
         teamResponsesAllIterations = TcrsResponse.objects.filter(
-            course=course, section=section, team=team
+            team__course=course, team__section=section, team__team=team
         ).values()
 
         """Get a list of iterations where we had at least one reply, and then sort them into ascending order so the chart comes out looking ok"""
@@ -408,29 +442,29 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
         if course:
             print("Filtering on course = " + str(course))
-            runningLookup = runningLookup.filter(course__in=course)
+            runningLookup = runningLookup.filter(team__course__in=course)
 
         section = request.data.get("section")
         print(section)
         if section:
             print("Filtering on section = " + str(section))
-            runningLookup = runningLookup.filter(section__in=section)
+            runningLookup = runningLookup.filter(team__section__in=section)
 
         team = request.data.get("team")
 
         if team:
             print("Filtering on team = " + str(team))
-            runningLookup = runningLookup.filter(team__in=team)
+            runningLookup = runningLookup.filter(team__team__in=team)
 
         matchingResponses = runningLookup.all()
 
         resp = dict()
 
-        resp["course"] = list(set([x.course for x in matchingResponses]))
+        resp["course"] = list(set([x.team.course for x in matchingResponses]))
 
-        resp["section"] = list(set([x.section for x in matchingResponses]))
+        resp["section"] = list(set([x.team.section for x in matchingResponses]))
 
-        resp["team"] = list(set([x.team for x in matchingResponses]))
+        resp["team"] = list(set([x.team.team for x in matchingResponses]))
 
         sys.stdout.flush()
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
@@ -447,19 +481,19 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
         if course:
             print("Filtering on course = " + str(course))
-            runningLookup = runningLookup.filter(course__in=course)
+            runningLookup = runningLookup.filter(team__course__in=course)
 
         section = request.data.get("section")
         print(section)
         if section:
             print("Filtering on section = " + str(section))
-            runningLookup = runningLookup.filter(section__in=section)
+            runningLookup = runningLookup.filter(team__section__in=section)
 
         team = request.data.get("team")
 
         if team:
             print("Filtering on team = " + str(team))
-            runningLookup = runningLookup.filter(team__in=team)
+            runningLookup = runningLookup.filter(team__team__in=team)
 
         iteration = request.data.get("iteration")
 
@@ -476,7 +510,9 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         # First, calculate how many struggling teams we have -- this is the number of teams where at least one member's response has a score <= 0
         for response in matchingResponses:
             # python is dumb and throws a fit if you try to use either an object or a tuple as a key, so we have to use this hack and then un-hack it (re-hack?) in the JS.
-            key = "{}-{}-{}".format(response.course, response.section, response.team)
+            key = "{}-{}-{}".format(
+                response.team.course, response.team.section, response.team.team
+            )
 
             if key not in scoresPerTeam:
                 scoresPerTeam[key] = []
@@ -516,7 +552,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             for response in responsesLastIteration:
                 # python is dumb and throws a fit if you try to use either an object or a tuple as a key, so we have to use this hack and then un-hack it (re-hack?) in the JS.
                 key = "{}-{}-{}".format(
-                    response.course, response.section, response.team
+                    response.team.course, response.team.section, response.team.team
                 )
 
                 if key not in lastIterationScoresPerTeam:

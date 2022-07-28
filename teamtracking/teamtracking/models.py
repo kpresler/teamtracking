@@ -4,6 +4,31 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
+class Team(models.Model):
+    """Represents a team on project for a course"""
+
+    course = models.CharField(max_length=10)
+    section = models.CharField(max_length=10)
+    team = models.CharField("Name or number of the student's team", max_length=20)
+
+    assigned_TA = models.ForeignKey(
+        to=User,
+        on_delete=models.PROTECT,
+        related_name="assigned_TA",
+        null=True,
+        blank=True,
+    )
+
+    def toDict(self):
+        dictionary = dict()
+        dictionary["course"] = self.course
+        dictionary["section"] = self.section
+        dictionary["team"] = self.team
+
+    def __str__(self):
+        return "{}-{}-{}".format(self.course, self.section, self.team)
+
+
 class TcrsQuestion(models.Model):
     """An individual question in the Team Collaboration Reflection Survey.  A question has question text and can be marked as `p`ositive, `n`egative, `t`ext, or `o`ther."""
 
@@ -44,9 +69,13 @@ class TcrsResponse(models.Model):
 
     submit_date = models.DateTimeField("Submission date")
 
-    course = models.CharField(max_length=10)
-    section = models.CharField(max_length=10)
-    team = models.CharField("Name or number of the student's team", max_length=20)
+    team = models.ForeignKey(
+        to=Team,
+        on_delete=models.PROTECT,
+        related_name="response",
+        null=False,
+        blank=False,
+    )
     submitter = models.CharField("Who submitted this response?", max_length=50)
     iteration = models.ForeignKey(
         to=Iteration, on_delete=models.PROTECT, null=False, blank=False
@@ -61,11 +90,7 @@ class TcrsResponse(models.Model):
             + " to iteration "
             + str(self.iteration)
             + " on team "
-            + self.section
-            + "-"
-            + self.team
-            + " in "
-            + self.course
+            + str(self.team)
             + " with a score of "
             + str(self.score)
         )
@@ -91,7 +116,7 @@ class TcrsQuestionResponse(models.Model):
     def __str__(self):
         return str(self.question) + "::" + self.response
 
-    def responseToDictionary(self):
+    def toDict(self):
 
         dictionary = {}
         dictionary["question"] = self.question.text
@@ -104,7 +129,6 @@ class Note(models.Model):
     """Represents an observation/note about a team's performance, or a followup requested"""
 
     note_text = models.CharField(max_length=1000)
-
     submit_date = models.DateTimeField("Note date")
 
     submitter = models.ForeignKey(
@@ -115,20 +139,26 @@ class Note(models.Model):
         blank=False,
     )
 
-    course = models.CharField(max_length=10)
-    section = models.CharField(max_length=10)
-    team = models.CharField("Name or number of the student's team", max_length=20)
+    team = models.ForeignKey(
+        to=Team,
+        on_delete=models.PROTECT,
+        related_name="note",
+        null=False,
+        blank=False,
+    )
 
-    def noteToDictionary(self):
+    def toDict(self):
         dictionary = dict()
 
         dictionary["note_text"] = self.note_text
         dictionary["submit_date"] = self.submit_date
         dictionary["submitter"] = self.submitter.username
-        dictionary["course"] = self.course
-        dictionary["section"] = self.section
-        dictionary["team"] = self.team
+
+        team = dict()
+        team["course"] = self.team.course
+        team["section"] = self.team.section
+        team["team"] = self.team.team
+
+        dictionary["team"] = team
 
         return dictionary
-
-    # TODO: At some point, extract the (course, section, team) into a Team object & reference that from this and the TcrsResponse.
