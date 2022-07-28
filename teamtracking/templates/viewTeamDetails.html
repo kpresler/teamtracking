@@ -51,29 +51,29 @@
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
                 $scope.id = urlParams.get("id");
-				$scope.iteration = urlParams.get("iteration");
+                $scope.iteration = urlParams.get("iteration");
 
                 $scope.creatingNote = false;
             
 
 
-				let loadTeam = function(){
-					$http.get("api/teams/" + $scope.id + "/?format=json").then(function(response){
-						$scope.course = response.data.course;
-						$scope.section = response.data.section;
-						$scope.teamNumber = response.data.team;
-						
-						$scope.loadChart();
-						$scope.loadIterations();
-						$scope.loadData();
-						
-					}, function(error){
-						console.log(error);
-					});
-				
-				}
-				
-				loadTeam();
+                let loadTeam = function(){
+                    $http.get("api/teams/" + $scope.id + "/?format=json").then(function(response){
+                        $scope.course = response.data.course;
+                        $scope.section = response.data.section;
+                        $scope.teamNumber = response.data.team;
+                        
+                        $scope.loadChart();
+                        $scope.loadIterations();
+                        $scope.loadData();
+                        
+                    }, function(error){
+                        console.log(error);
+                    });
+                
+                }
+                
+                loadTeam();
               
                
                 $scope.round = function(number){

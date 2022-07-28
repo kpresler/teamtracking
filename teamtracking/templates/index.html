@@ -1,80 +1,80 @@
 <html>
-	<head>
-	
+    <head>
+    
 
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        
     <link rel="stylesheet"
-	    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-	    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-	    crossorigin="anonymous" />
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous" />
 
     <script
-	    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-	    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-	    crossorigin="anonymous"></script>
-	
+        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    
 
-	
-	<style>
+    
+    <style>
         .top15 {
-	        margin-top: 15px;
+            margin-top: 15px;
         }
 
         .top5 {
-	        margin-top: 5px;
+            margin-top: 5px;
         }
     </style>
 
     </head>
-	
-	
-	<body>
-	
-	    <div class="container">
-	
-	    <h3>Welcome to the Software Engineering Team Tracking Application!</h3>
-		
-		<div class="top15">
-		The purpose of this application is to support tracking student teams in software engineering courses (or any other courses that feature team-based projects) so that the teaching staff can observe and track team challenges, and offer support to teams in overcoming these challenges.  This application is built around the Team Collaboration Reflection Survey (TCRS) <a href="https://dl.acm.org/doi/abs/10.1145/3478431.3499367" target="_blank">from SIGCSE 2022</a>
-		
-		</div>
-		
-		<div class="top15">
-		
-		You must first <a href="/api-auth/login/?next=/">log in<a>, or all API actions will fail.
-		
-		</div>
-		
-		<div class="top15">
-		
-		After loggin in, two sets of data must be initialised:
-			<ul>
-				<li><a href="api/tcrsquestions">Initialise the questions</a> used in your version of the TCRS.  Each question has a question text, which must <strong>exactly</strong> match against that in the CSV file you will submit later on.  Additionally, questions have a type -- <tt>positive</tt> questions are ones where we would expect a successful team to answer "agree" or "strongly agree"; <tt>negative</tt> questions are ones where would expect successful teams to answer "disagree" or "strongly disagree".  <tt>text</tt> questions are natural-language processed, and <tt>other</tt> questions are skipped when scoring the survey (but are still available for viewing later on).
-				<li><a href="api/iterations">Initialise the iterations</a> in your project.  The idea here is that we want to track team challenges and how they are resolved, or get worse, week after week.  To display meaningful reports, the system needs to know how many iterations your project has, and the order in which they are arranged.  The <tt>displayed value</tt> is just that -- the value you want displayed to the user(s) of this system (TAs, etc).  This is designed to be human-readable, for instance "Iteration A", "Iteration B", "Iteration 3", etc.  Make sure whatever values you provide here match against what is present in your version of the TCRS -- lookup is <strong>exact</strong> and any differences will cause it to fail.  The <tt>sequential value</tt> is used for tracking their order internally, and can be either 0-indexed or 1-indexed.
-		
-			</ul>
-		</div>
-		
-		
-		<div class="top15">
-			Next, <a href="loadTCRS">load in your TCRS submissions</a> from a CSV file.  
-		
-		</div>
-		
-		<div class="top15">
-			You can then view <a href="viewTeamDetails">details for individual teams</a> or <a href="viewSummary">a summary of teams</a> for a given week.
-		
-		</div>
-		
-		<div class="top15">
-			For a reference of the API and to view stored data, check out <a href="/api/">the API</a>.
-		
-		</div>
-		
-	    </div>
-	
-	</body>
+    
+    
+    <body>
+    
+        <div class="container">
+    
+        <h3>Welcome to the Software Engineering Team Tracking Application!</h3>
+        
+        <div class="top15">
+        The purpose of this application is to support tracking student teams in software engineering courses (or any other courses that feature team-based projects) so that the teaching staff can observe and track team challenges, and offer support to teams in overcoming these challenges.  This application is built around the Team Collaboration Reflection Survey (TCRS) <a href="https://dl.acm.org/doi/abs/10.1145/3478431.3499367" target="_blank">from SIGCSE 2022</a>
+        
+        </div>
+        
+        <div class="top15">
+        
+        You must first <a href="/api-auth/login/?next=/">log in<a>, or all API actions will fail.
+        
+        </div>
+        
+        <div class="top15">
+        
+        After loggin in, two sets of data must be initialised:
+            <ul>
+                <li><a href="api/tcrsquestions">Initialise the questions</a> used in your version of the TCRS.  Each question has a question text, which must <strong>exactly</strong> match against that in the CSV file you will submit later on.  Additionally, questions have a type -- <tt>positive</tt> questions are ones where we would expect a successful team to answer "agree" or "strongly agree"; <tt>negative</tt> questions are ones where would expect successful teams to answer "disagree" or "strongly disagree".  <tt>text</tt> questions are natural-language processed, and <tt>other</tt> questions are skipped when scoring the survey (but are still available for viewing later on).
+                <li><a href="api/iterations">Initialise the iterations</a> in your project.  The idea here is that we want to track team challenges and how they are resolved, or get worse, week after week.  To display meaningful reports, the system needs to know how many iterations your project has, and the order in which they are arranged.  The <tt>displayed value</tt> is just that -- the value you want displayed to the user(s) of this system (TAs, etc).  This is designed to be human-readable, for instance "Iteration A", "Iteration B", "Iteration 3", etc.  Make sure whatever values you provide here match against what is present in your version of the TCRS -- lookup is <strong>exact</strong> and any differences will cause it to fail.  The <tt>sequential value</tt> is used for tracking their order internally, and can be either 0-indexed or 1-indexed.
+        
+            </ul>
+        </div>
+        
+        
+        <div class="top15">
+            Next, <a href="loadTCRS">load in your TCRS submissions</a> from a CSV file.  
+        
+        </div>
+        
+        <div class="top15">
+            You can then view <a href="viewTeamDetails">details for individual teams</a> or <a href="viewSummary">a summary of teams</a> for a given week.
+        
+        </div>
+        
+        <div class="top15">
+            For a reference of the API and to view stored data, check out <a href="/api/">the API</a>.
+        
+        </div>
+        
+        </div>
+    
+    </body>
 
 
 </html>
