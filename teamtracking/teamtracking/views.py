@@ -91,6 +91,27 @@ class NoteViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=False, methods=["post"])
+    @transaction.atomic
+    def for_team(self, request):
+        course = request.data["course"]
+        section = request.data["section"]
+        team = request.data["team"]
+
+        matching = (
+            Note.objects.filter(course=course, section=section, team=team)
+            .order_by("-submit_date")
+            .all()
+        )
+
+        resp = []
+
+        for note in matching:
+            """Derpy JSON serialisation hurting us again..."""
+            resp.append(note.noteToDictionary())
+
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
+
 
 class TcrsResponseViewSet(viewsets.ModelViewSet):
     queryset = TcrsResponse.objects.all()

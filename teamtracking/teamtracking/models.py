@@ -119,4 +119,16 @@ class Note(models.Model):
     section = models.CharField(max_length=10)
     team = models.CharField("Name or number of the student's team", max_length=20)
 
+    def noteToDictionary(self):
+        dictionary = dict()
+
+        dictionary["note_text"] = self.note_text
+        dictionary["submit_date"] = self.submit_date
+        dictionary["submitter"] = self.submitter.username
+        dictionary["course"] = self.course
+        dictionary["section"] = self.section
+        dictionary["team"] = self.team
+
+        return dictionary
+
     # TODO: At some point, extract the (course, section, team) into a Team object & reference that from this and the TcrsResponse.
