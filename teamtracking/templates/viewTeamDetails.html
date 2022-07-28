@@ -47,22 +47,33 @@
             app.controller('teamDetailsCtrl', function($scope, $http) {
             
             
-                /* This won't work yet since we aren't linking to this with URL parameters....soon :tm:
+                
                 const queryString = window.location.search;
                 const urlParams = new URLSearchParams(queryString);
-                $scope.course = urlParams.get("course");
-                $scope.section = urlParams.get("section");
-                $scope.team = urlParams.get("team");
-                
-                */
-            
-            
-                $scope.section = "a";
-                $scope.teamNumber = "5";
-                $scope.course = "CSCI 2335";
-                
+                $scope.id = urlParams.get("id");
+				$scope.iteration = urlParams.get("iteration");
+
                 $scope.creatingNote = false;
             
+
+
+				let loadTeam = function(){
+					$http.get("api/teams/" + $scope.id + "/?format=json").then(function(response){
+						$scope.course = response.data.course;
+						$scope.section = response.data.section;
+						$scope.teamNumber = response.data.team;
+						
+						$scope.loadChart();
+						$scope.loadIterations();
+						$scope.loadData();
+						
+					}, function(error){
+						console.log(error);
+					});
+				
+				}
+				
+				loadTeam();
               
                
                 $scope.round = function(number){
@@ -120,7 +131,7 @@
                     });
                 }
                 
-                $scope.loadIterations();
+                
                 
 
                 $scope.loadChart = function (){
@@ -232,7 +243,7 @@
                     return new Date(date).toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
                 }
                 
-                $scope.loadChart();
+                
             });
             
             
@@ -250,7 +261,7 @@
         
             <div class="row top15">
                 <div class="col-md-4">
-                    <div class="well">{{course}}-{{section}}-{{teamNumber}}</div>
+                    <div class="well"><h5>{{course}}-{{section}}-{{teamNumber}}</h5></div>
                 </div>
                 <div class="col-md-4">
                     <div class="well"></div>

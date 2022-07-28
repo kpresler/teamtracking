@@ -131,7 +131,30 @@ multiselect .dropdown-menu > li > a {
 
 	
 					$http.post("api/tcrsresponses/team_summary/", submit).then(function(response){
-						$scope.details = response.data;
+					$scope.details = {};
+						$scope.details.strugglingTeams = parse(response.data.strugglingTeams);
+						$scope.details.drop = parse(response.data.drop);
+						$scope.details.improvement = parse(response.data.improvement);
+						
+						$scope.details.allTeams = [];
+						for(const teamDetails of response.data.allTeams){
+							parts = teamDetails.team.split("::");
+							let course = parts[0];
+							let section = parts[1];
+							let team = parts[2];
+							let id = parts[3];
+							$scope.details.allTeams.push({
+								course: course,
+								section: section,
+								team: team,
+								id: id,
+								lowestScore: teamDetails.lowestScore,
+								highestScore: teamDetails.highestScore,
+								averageScore: teamDetails.avgScore
+							});
+						
+						}
+						
 						$scope.dataLoaded = true;
 					
 					},
@@ -140,9 +163,31 @@ multiselect .dropdown-menu > li > a {
 					
 					});
 	
+				}
 				
-				
-				
+				let parse = function(teamData){
+					arr = [];
+					for (const [key, value] of Object.entries(teamData)) {
+						
+						
+						/* Python is dumb and won't let us use a full object as a key, so we have to jam it all together and pull it apart.  The format expected is `Course::Section::TeamNo::id` */
+						parts = key.split("::");
+						let course = parts[0];
+						let section = parts[1];
+						let team = parts[2];
+						let id = parts[3];
+						arr.push({
+							course: course,
+							section: section,
+							team: team,
+							id: id,
+							score: value
+						});
+						
+
+					}
+					return arr;
+					
 				}
 				
 				
@@ -222,10 +267,18 @@ multiselect .dropdown-menu > li > a {
 			
 				<h5>Struggling Teams This Week:</h5>
 			
-				<div class="span3">
+				<div class="span6">
 			
-					<div ng-repeat="(team, score) in details.strugglingTeams track by $index">
-						Team: {{team}} => Score: {{score}}:<br />
+					<div ng-repeat="team in details.strugglingTeams track by $index">
+						Team: {{team.course}}-{{team.section}}-{{team.team}}
+						<br>&nbsp;&nbsp;&nbsp;&nbsp;Lowest Score: {{team.score}} 
+						
+						<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+							<i class="fas fa-external-link-square-alt"></i>
+							View Details
+							<i class="fas fa-external-link-square-alt"></i>
+						</a>
+						<br />
 	
 					</div>
 			
@@ -238,10 +291,18 @@ multiselect .dropdown-menu > li > a {
 			
 				<h5>Largest Improvement This Week:</h5>
 			
-				<div class="span3">
+				<div class="span6">
 			
-					<div ng-repeat="(team, score) in details.improvement track by $index">
-						Team: {{team}} => Change: {{score}}:<br />
+					<div ng-repeat="team in details.improvement track by $index">
+						Team: {{team.course}}-{{team.section}}-{{team.team}}
+						<br>&nbsp;&nbsp;&nbsp;&nbsp;Change: {{team.score}}
+						
+						<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+							<i class="fas fa-external-link-square-alt"></i>
+							View Details
+							<i class="fas fa-external-link-square-alt"></i>
+						</a>
+						<br />
 	
 					</div>
 			
@@ -253,16 +314,49 @@ multiselect .dropdown-menu > li > a {
 			
 				<h5>Largest Drop This Week:</h5>
 			
-				<div class="span3">
+				<div class="span6">
 			
-					<div ng-repeat="(team, score) in details.drop track by $index">
-						Team: {{team}} => Change: {{score}}:<br />
+					<div ng-repeat="team in details.drop track by $index">
+						Team: {{team.course}}-{{team.section}}-{{team.team}}
+						<br>&nbsp;&nbsp;&nbsp;&nbsp;Change: {{team.score}}
+						
+						<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+							<i class="fas fa-external-link-square-alt"></i>
+							View Details
+							<i class="fas fa-external-link-square-alt"></i>
+						</a>
+						<br />
 	
 					</div>
 			
 				</div>		
 		
-			</div>			
+			</div>		
+
+
+			<div class="row">
+				<h5>All Teams:</h5>
+			
+			
+				<div class="span6">
+			
+					<div ng-repeat="team in details.allTeams track by $index">
+						<strong>Team: {{team.course}}-{{team.section}}-{{team.team}}</strong> 
+						<br>&nbsp;&nbsp;&nbsp;&nbsp;
+						Score Range: (min: {{team.lowestScore}} => max: {{team.highestScore}} (avg: {{team.averageScore}}))
+						
+						<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+							<i class="fas fa-external-link-square-alt"></i>
+							View Details
+							<i class="fas fa-external-link-square-alt"></i>
+						</a>
+						<br />
+	
+					</div>
+			
+				</div>
+			
+			</div>
 
 			
 			

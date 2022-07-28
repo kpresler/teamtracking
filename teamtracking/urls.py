@@ -25,6 +25,7 @@ router.register(r"tcrsquestions", views.TcrsQuestionViewSet)
 router.register(r"tcrsresponses", views.TcrsResponseViewSet)
 router.register(r"iterations", views.IterationViewSet)
 router.register(r"notes", views.NoteViewSet)
+router.register(r"teams", views.TeamViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

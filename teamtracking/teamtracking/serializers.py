@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
-from .models import TcrsQuestion, TcrsResponse, Iteration, Note
+from .models import TcrsQuestion, TcrsResponse, Iteration, Note, Team
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -38,3 +38,9 @@ class NoteSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Note
         fields = ["note_text", "submit_date", "submitter", "course", "section", "team"]
+
+
+class TeamSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Team
+        fields = ["course", "section", "team"]

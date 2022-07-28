@@ -20,6 +20,7 @@ from teamtracking.teamtracking.serializers import (
     TcrsResponseSerializer,
     IterationSerializer,
     NoteSerializer,
+    TeamSerializer,
 )
 from .models import (
     TcrsQuestion,
@@ -66,6 +67,12 @@ class TcrsQuestionViewSet(viewsets.ModelViewSet):
 class IterationViewSet(viewsets.ModelViewSet):
     queryset = Iteration.objects.all()
     serializer_class = IterationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class TeamViewSet(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
@@ -510,8 +517,11 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         # First, calculate how many struggling teams we have -- this is the number of teams where at least one member's response has a score <= 0
         for response in matchingResponses:
             # python is dumb and throws a fit if you try to use either an object or a tuple as a key, so we have to use this hack and then un-hack it (re-hack?) in the JS.
-            key = "{}-{}-{}".format(
-                response.team.course, response.team.section, response.team.team
+            key = "{}::{}::{}::{}".format(
+                response.team.course,
+                response.team.section,
+                response.team.team,
+                response.team.id,
             )
 
             if key not in scoresPerTeam:
@@ -534,6 +544,8 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             avgScore = sum(scores) / len(scores)
             averageScorePerTeam[team] = avgScore
 
+        resp["strugglingTeams"] = teamsWithNeg
+
         # If there are responses for a previous week, go calculate teams that have seen the biggest improvement and ones that have seen the biggest drop.
         # Note, that while the flagging ^ above uses individual scores, this uses team-level scores.  This might be worth revisiting in the future
 
@@ -551,8 +563,11 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
             for response in responsesLastIteration:
                 # python is dumb and throws a fit if you try to use either an object or a tuple as a key, so we have to use this hack and then un-hack it (re-hack?) in the JS.
-                key = "{}-{}-{}".format(
-                    response.team.course, response.team.section, response.team.team
+                key = "{}::{}::{}::{}".format(
+                    response.team.course,
+                    response.team.section,
+                    response.team.team,
+                    response.team.id,
                 )
 
                 if key not in lastIterationScoresPerTeam:
@@ -602,8 +617,26 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
             resp["improvement"] = mostImproved
             resp["drop"] = mostDrop
+        # end if
 
-        resp["strugglingTeams"] = teamsWithNeg
+        # Now, prepare a list of all teams
+
+        allTeamDetails = []
+
+        for team in scoresPerTeam:
+
+            scores = sorted(scoresPerTeam[team])
+
+            out = dict()
+
+            out["lowestScore"] = scores[0]
+            out["highestScore"] = scores[-1]
+            out["avgScore"] = sum(scores) / len(scores)
+            out["team"] = team
+
+            allTeamDetails.append(out)
+
+        resp["allTeams"] = allTeamDetails
 
         print(resp)
 
