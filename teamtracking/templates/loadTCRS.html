@@ -2,44 +2,44 @@
     <head>
         <title>Populate Data from TCRS Submissions</title>
 <script
-	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	
-	<script src="static/teamtracking/papaparse.min.js"></script>
-	
+    src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script src="static/teamtracking/papaparse.min.js"></script>
+    
 <link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-	integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-	crossorigin="anonymous" />
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous" />
 
 <script
-	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-	integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-	crossorigin="anonymous"></script>
-	
-	
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+    
+    
 <script src="https://kit.fontawesome.com/8b14d54041.js"
-	crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
 <body>
 
 
-		<script>
-			/*<![CDATA[*/
+        <script>
+            /*<![CDATA[*/
 
-			var app = angular.module('myApp', []);
-			
-			app.config(['$httpProvider', function($httpProvider) {
+            var app = angular.module('myApp', []);
+            
+            app.config(['$httpProvider', function($httpProvider) {
                 $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
             }]);
-			
-			app.controller('importCtrl', function($scope, $http) {
-			
-			    var clearAlerts = function() {
+            
+            app.controller('importCtrl', function($scope, $http) {
+            
+                var clearAlerts = function() {
                     $scope.error = {}, $scope.warning = null, $scope.success=false;
                 };
-				
-				
-				// Upload and read CSV function
+                
+                
+                // Upload and read CSV function
                 $scope.submitForm = function(form) {
                     clearAlerts();
                     var filename = document.getElementById("bulkDirectFile");
@@ -77,8 +77,8 @@
                         return false;
                     }
                 }
-				
-				    //   Convert to JSON function
+                
+                    //   Convert to JSON function
                 $scope.add = function(){
                     var Table = document.getElementById('Table');
                     var file = document.getElementById("bulkDirectFile").files[0];
@@ -93,28 +93,28 @@
                         complete: function(results) {
                             allResults.push(results.data);
                             console.log(results.data)
-							
-							$http.post("api/tcrsresponses/process_responses/", results.data).then(function(response) {
-					            console.log(response);
-								$scope.uploaded = response.data[0];
-								$scope.skipped = response.data[1];
-								$scope.success = true;
-				            }, function(error){
-				                console.log(error);
-				            });
+                            
+                            $http.post("api/tcrsresponses/process_responses/", results.data).then(function(response) {
+                                console.log(response);
+                                $scope.uploaded = response.data[0];
+                                $scope.skipped = response.data[1];
+                                $scope.success = true;
+                            }, function(error){
+                                console.log(error);
+                            });
                  
                         }
                       });   
                     }
-					
-									
-      				
-			});
+                    
+                                    
+                      
+            });
 
-			/*]]>*/
-		</script>
+            /*]]>*/
+        </script>
 
-		<div ng-app="myApp" ng-controller="importCtrl" class="container">
+        <div ng-app="myApp" ng-controller="importCtrl" class="container">
 
 
             <div class="box-body table-responsive">
@@ -150,7 +150,7 @@
                            
                           <button type="button" class="btn btn-success" data-ng-click="add()">Upload</button>
                           </div>
-						  
+                          
 
  
  
@@ -161,15 +161,15 @@
                     </form>
                       
             </div>
-    	    <div ng-if="success">
-			{% verbatim %}
-				A total of {{uploaded}} responses were uploaded and saved.  {{skipped}} responses were already present and have been skipped.
-			{% endverbatim %}						  
-			</div>
-					
+            <div ng-if="success">
+            {% verbatim %}
+                A total of {{uploaded}} responses were uploaded and saved.  {{skipped}} responses were already present and have been skipped.
+            {% endverbatim %}                          
+            </div>
+                    
 
-			
-		</div>
+            <a href="/">Home</a>
+        </div>
 
 </body>
 
