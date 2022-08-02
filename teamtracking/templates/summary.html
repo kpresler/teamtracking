@@ -18,28 +18,28 @@
     <style>
         
         multiselect {
-    display:block;
-}
-multiselect .btn {
-    width: 100%;
-    background-color: #FFF;
-}
-multiselect .btn.error{
-    border: 1px solid #da4f49 !important;
-}
-multiselect .dropdown-menu {
-    max-height: 300px;
-    overflow-y: auto;
-}
-multiselect .dropdown-menu {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 2px;
-}
-multiselect .dropdown-menu > li > a {
-    padding: 3px 10px;
-    cursor:pointer;
-}
+			display:block;
+		}
+		multiselect .btn {
+			width: 100%;
+			background-color: #FFF;
+		}
+		multiselect .btn.error{
+			border: 1px solid #da4f49 !important;
+		}
+		multiselect .dropdown-menu {
+			max-height: 300px;
+			overflow-y: auto;
+		}
+		multiselect .dropdown-menu {
+			width: 100%;
+			box-sizing: border-box;
+			padding: 2px;
+		}
+		multiselect .dropdown-menu > li > a {
+			padding: 3px 10px;
+			cursor:pointer;
+		}
     </style>
     
 </head>
@@ -242,13 +242,7 @@ multiselect .dropdown-menu > li > a {
                     return arr;
                     
                 }
-				
-				
 
-				
-				
-               
-                
                 loadTeams(false,false,false);
                 
                 
@@ -278,7 +272,7 @@ multiselect .dropdown-menu > li > a {
                     <option value=""></option>
                 </select>
                 
-                <button type="button" class="btn btn-success" data-ng-click="loadDetails()">Go!</button>
+                <button type="button" class="btn btn-success" data-ng-click="loadDetails()">Load TCRS Details</button>
                 
             </div>
         
@@ -318,29 +312,102 @@ multiselect .dropdown-menu > li > a {
             
         </div>
     
-        <div ng-show="dataLoaded">
-        
+        <div>
     
             <div class="row">
+			
+			
+				<div class="span6">
+				
+					<div ng-show="dataLoaded">
+				
+						<div class="row">
+					
+							<h5>Struggling Teams This Week:</h5>
             
-                <h5>Struggling Teams This Week:</h5>
+                
             
-                <div class="span6">
-            
-                    <div ng-repeat="team in details.strugglingTeams track by $index">
-                        Team: {{team.course}}-{{team.section}}-{{team.team}}
-                        <br>&nbsp;&nbsp;&nbsp;&nbsp;Lowest Score: {{team.score}} 
+							<div ng-repeat="team in details.strugglingTeams track by $index">
+								Team: {{team.course}}-{{team.section}}-{{team.team}}
+								<br>&nbsp;&nbsp;&nbsp;&nbsp;Lowest Score: {{team.score}} 
                         
-                        <a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
-                            <i class="fas fa-external-link-square-alt"></i>
-                            View Details
-                            <i class="fas fa-external-link-square-alt"></i>
-                        </a>
-                        <br />
+								<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+									<i class="fas fa-external-link-square-alt"></i>
+									View Details
+									<i class="fas fa-external-link-square-alt"></i>
+								</a>
+								<br />
     
-                    </div>
+							</div>
+					
+					
+						</div>
+					
+						<div class="row">
+					        <h5>Largest Improvement This Week:</h5>
             
-                </div>
+                
+            
+							<div ng-repeat="team in details.improvement track by $index">
+								Team: {{team.course}}-{{team.section}}-{{team.team}}
+								<br>&nbsp;&nbsp;&nbsp;&nbsp;Change: {{team.score}}
+                        
+								<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+									<i class="fas fa-external-link-square-alt"></i>
+									View Details
+									<i class="fas fa-external-link-square-alt"></i>
+								</a>
+								<br />
+    
+							</div>
+					
+						</div>
+					
+					
+						<div class="row">
+					
+							<h5>Largest Drop This Week:</h5>
+            
+                
+            
+							<div ng-repeat="team in details.drop track by $index">
+								Team: {{team.course}}-{{team.section}}-{{team.team}}
+								<br>&nbsp;&nbsp;&nbsp;&nbsp;Change: {{team.score}}
+                        
+								<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+									<i class="fas fa-external-link-square-alt"></i>
+									View Details
+									<i class="fas fa-external-link-square-alt"></i>
+								</a>
+								<br />
+    
+							</div>
+					
+					
+						</div>
+					
+						<div class="row">
+							<h5>All Teams:</h5>
+            
+							<div ng-repeat="team in details.allTeams track by $index">
+								<strong>Team: {{team.course}}-{{team.section}}-{{team.team}}</strong> 
+								<br>&nbsp;&nbsp;&nbsp;&nbsp;
+								Score Range: (min: {{team.lowestScore}} => max: {{team.highestScore}} (avg: {{team.averageScore}}))
+                        
+								<a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
+									<i class="fas fa-external-link-square-alt"></i>
+									View Details
+									<i class="fas fa-external-link-square-alt"></i>
+								</a>
+								<br />
+    
+							</div>
+					
+						</div>
+				
+					</div>
+				
+				</div>
 				
 				<div class="span6">
 					<canvas id="line-chart" width="200" height="200"></canvas>
@@ -348,84 +415,8 @@ multiselect .dropdown-menu > li > a {
 				</div>
     
             </div>
-        
-        
-            <div class="row">
-            
-                <h5>Largest Improvement This Week:</h5>
-            
-                <div class="span6">
-            
-                    <div ng-repeat="team in details.improvement track by $index">
-                        Team: {{team.course}}-{{team.section}}-{{team.team}}
-                        <br>&nbsp;&nbsp;&nbsp;&nbsp;Change: {{team.score}}
-                        
-                        <a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
-                            <i class="fas fa-external-link-square-alt"></i>
-                            View Details
-                            <i class="fas fa-external-link-square-alt"></i>
-                        </a>
-                        <br />
-    
-                    </div>
-            
-                </div>        
-        
-            </div>
-            
-            <div class="row">
-            
-                <h5>Largest Drop This Week:</h5>
-            
-                <div class="span6">
-            
-                    <div ng-repeat="team in details.drop track by $index">
-                        Team: {{team.course}}-{{team.section}}-{{team.team}}
-                        <br>&nbsp;&nbsp;&nbsp;&nbsp;Change: {{team.score}}
-                        
-                        <a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
-                            <i class="fas fa-external-link-square-alt"></i>
-                            View Details
-                            <i class="fas fa-external-link-square-alt"></i>
-                        </a>
-                        <br />
-    
-                    </div>
-            
-                </div>        
-        
-            </div>        
-
-
-            <div class="row">
-                <h5>All Teams:</h5>
-            
-            
-                <div class="span6">
-            
-                    <div ng-repeat="team in details.allTeams track by $index">
-                        <strong>Team: {{team.course}}-{{team.section}}-{{team.team}}</strong> 
-                        <br>&nbsp;&nbsp;&nbsp;&nbsp;
-                        Score Range: (min: {{team.lowestScore}} => max: {{team.highestScore}} (avg: {{team.averageScore}}))
-                        
-                        <a href="viewTeamDetails?id={{team.id}}&iteration={{iteration.displayed_value}}" target="_blank">
-                            <i class="fas fa-external-link-square-alt"></i>
-                            View Details
-                            <i class="fas fa-external-link-square-alt"></i>
-                        </a>
-                        <br />
-    
-                    </div>
-            
-                </div>
-            
-            </div>
-
-            
-            
+  
         </div>
-        
-        
 
     {% endverbatim %}
             
