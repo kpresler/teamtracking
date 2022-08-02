@@ -342,12 +342,11 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
         sys.stdout.flush()
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
-    
 
     @action(detail=False, methods=["post"])
-    @transaction.atomic    
+    @transaction.atomic
     def all_sentiment_data(self, request):
-        resp = dict();
+        resp = dict()
 
         runningLookup = TcrsResponse.objects
 
@@ -369,13 +368,10 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             print("Filtering on team = " + str(team))
             runningLookup = runningLookup.filter(team__team__in=team)
 
-        matchingResponses = runningLookup.all()        
-
+        matchingResponses = runningLookup.all()
 
         """Get a list of iterations where we had at least one reply, and then sort them into ascending order so the chart comes out looking ok"""
-        iterationsWithResponses = [
-            x.iteration.id for x in matchingResponses
-        ]
+        iterationsWithResponses = [x.iteration.id for x in matchingResponses]
         uniqueIterationIds = list(dict.fromkeys(iterationsWithResponses))
 
         uniqueIterations = []
@@ -403,26 +399,23 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             responses = []
             for iteration in uniqueIterations:
                 full_responses = TcrsResponse.objects.filter(
-                        team=team,
-                        iteration=iteration,
-                    ).all()
-                
+                    team=team,
+                    iteration=iteration,
+                ).all()
+
                 if full_responses:
-                    resp_scores = [x.score for x in full_responses];
-                    team_score = sum(resp_scores)/len(resp_scores);
+                    resp_scores = [x.score for x in full_responses]
+                    team_score = sum(resp_scores) / len(resp_scores)
                     responses.append(team_score)
-                
+
                 else:
                     responses.append(None)
             sentiments[str(team)] = responses
 
-        resp["sentimentDetails"] = sentiments        
-    
-    
+        resp["sentimentDetails"] = sentiments
+
         sys.stdout.flush()
-        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)    
-    
-    
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"])
     @transaction.atomic
