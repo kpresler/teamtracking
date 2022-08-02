@@ -57,10 +57,10 @@
                                 var table = $("<table />").css('width','100%');
                     
                                 var rows = e.target.result.split("\n");
-                                for (var i = 0; i < rows.length; i++) {
+                                for (var i = 0; i < rows.length && i < 10; i++) {
                                     var row = $("<tr  />");
                                     var cells = rows[i].split(",");
-                                    for (var j = 0; j < cells.length && j < 10; j++) {
+                                    for (var j = 0; j < cells.length; j++) {
                                         var cell = $("<td />").css('border','1px solid black');
                                         cell.html(cells[j]);
                                         row.append(cell);
