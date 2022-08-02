@@ -75,6 +75,27 @@ class TeamViewSet(viewsets.ModelViewSet):
     serializer_class = TeamSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    @action(detail=False, methods=["post"])
+    @transaction.atomic
+    def assigned_ta(self, request):
+
+        team = Team.objects.filter(id=request.data["team"]).get()
+
+        ta = username = request.data.get("ta")
+
+        if ta:
+            team.assigned_TA = User.objects.filter(username=ta).get()
+            team.save()
+        else:
+            team.assigned_TA = None
+            team.save()
+
+        return JsonResponse(
+            "TA assignment for {} updated successfully".format(team),
+            safe=False,
+            status=status.HTTP_200_OK,
+        )
+
 
 class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
@@ -267,14 +288,22 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         """First, go load in all matching TCRS responses"""
         section = request.data["section"]
         team = request.data["teamNumber"]
+        course = request.data["course"]
+
+        teamRecord = Team.objects.filter(
+            course=course, section=section, team=team
+        ).get()
+
+        print("Team record is " + str(teamRecord))
+
+        resp["team"] = teamRecord.toDict()
+
         iteration = Iteration.objects.filter(
             displayed_value=request.data["iteration"]
         ).get()
-        course = request.data["course"]
+
         matchingResponses = TcrsResponse.objects.filter(
-            team__course=course,
-            team__section=section,
-            team__team=team,
+            team=teamRecord,
             iteration=iteration,
         ).values()
 

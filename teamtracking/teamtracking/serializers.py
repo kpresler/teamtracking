@@ -43,4 +43,4 @@ class NoteSerializer(serializers.HyperlinkedModelSerializer):
 class TeamSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Team
-        fields = ["course", "section", "team"]
+        fields = ["course", "section", "team", "assigned_TA"]

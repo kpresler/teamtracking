@@ -24,6 +24,8 @@ class Team(models.Model):
         dictionary["course"] = self.course
         dictionary["section"] = self.section
         dictionary["team"] = self.team
+        dictionary["assigned_TA"] = self.assigned_TA.username
+        return dictionary
 
     def __str__(self):
         return "{}-{}-{}".format(self.course, self.section, self.team)
