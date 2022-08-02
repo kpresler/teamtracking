@@ -342,6 +342,87 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
 
         sys.stdout.flush()
         return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
+    
+
+    @action(detail=False, methods=["post"])
+    @transaction.atomic    
+    def all_sentiment_data(self, request):
+        resp = dict();
+
+        runningLookup = TcrsResponse.objects
+
+        course = request.data.get("course")
+
+        if course:
+            print("Filtering on course = " + str(course))
+            runningLookup = runningLookup.filter(team__course__in=course)
+
+        section = request.data.get("section")
+        print(section)
+        if section:
+            print("Filtering on section = " + str(section))
+            runningLookup = runningLookup.filter(team__section__in=section)
+
+        team = request.data.get("team")
+
+        if team:
+            print("Filtering on team = " + str(team))
+            runningLookup = runningLookup.filter(team__team__in=team)
+
+        matchingResponses = runningLookup.all()        
+
+
+        """Get a list of iterations where we had at least one reply, and then sort them into ascending order so the chart comes out looking ok"""
+        iterationsWithResponses = [
+            x.iteration.id for x in matchingResponses
+        ]
+        uniqueIterationIds = list(dict.fromkeys(iterationsWithResponses))
+
+        uniqueIterations = []
+        for iterationId in uniqueIterationIds:
+            uniqueIterations.append(Iteration.objects.filter(id=iterationId).get())
+
+        uniqueIterations.sort(key=lambda x: x.sequential_value)
+
+        resp["iterations"] = [x.displayed_value for x in uniqueIterations]
+
+        """Now, fetch sentiment details for each member of the team.  The JSON format we want is:
+        {
+           "team-1": [array-of-values],
+           "team-2": [array-of-values],
+           ...
+        }
+        
+        In cases where they forgot to submit an iteration for the week, stick a `None` in the list in the appropriate slot; the charting is configured to skip over missing values and will handle it.
+        """
+
+        sentiments = dict()
+        teams = [x.team for x in matchingResponses]
+
+        for team in teams:
+            responses = []
+            for iteration in uniqueIterations:
+                full_responses = TcrsResponse.objects.filter(
+                        team=team,
+                        iteration=iteration,
+                    ).all()
+                
+                if full_responses:
+                    resp_scores = [x.score for x in full_responses];
+                    team_score = sum(resp_scores)/len(resp_scores);
+                    responses.append(team_score)
+                
+                else:
+                    responses.append(None)
+            sentiments[str(team)] = responses
+
+        resp["sentimentDetails"] = sentiments        
+    
+    
+        sys.stdout.flush()
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)    
+    
+    
 
     @action(detail=False, methods=["post"])
     @transaction.atomic

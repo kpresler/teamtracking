@@ -56,7 +56,6 @@ multiselect .dropdown-menu > li > a {
             }]);
             
             app.controller('teamSummaryCtrl', function($scope, $http) {
-                $scope.name = 'World';
 
                 
                 $scope.courses = [];
@@ -75,6 +74,61 @@ multiselect .dropdown-menu > li > a {
                 
                 $scope.loadT = function(){
                     loadTeams(false,false,true);
+                }
+				
+				
+				let displayChart = function (){
+                
+                
+                    let datasets = [];
+                    let colours = ["red", "green", "blue", "yellow", "purple", "orange", "black", "pink", "brown", "teal", "gray"];
+                    var idx = 0;
+                
+                    for (const [key, value] of Object.entries($scope.sentimentDetails)){
+                
+                        datasets.push({
+                            data: value,
+                            label: key,
+                            borderColor: colours[idx],
+                            fill: false    
+
+                        });
+                        idx++;
+                
+                    }
+                
+                
+                    new Chart(document.getElementById("line-chart"), {
+                        type: 'line',
+                        data: {
+                            labels: $scope.chartIterations,
+                            datasets: datasets
+                        },
+                        options: {
+                            title: {
+                                display: true,
+                                text: 'Change in team sentiment over time'
+                            },
+                            spanGaps: true
+                        }
+                    });
+
+                }
+ 
+ 				let loadChart = function (){
+                    let submit = {};
+                    submit.course = $scope.selectedCourse;
+                    submit.section = $scope.selectedSection;
+                    submit.team = $scope.selectedTeam;
+					
+                    $http.post("api/tcrsresponses/all_sentiment_data/", submit).then(function(response) {
+                        $scope.chartIterations = response.data.iterations;                
+                        $scope.sentimentDetails = response.data.sentimentDetails;
+                        displayChart();
+                        
+                    }, function(error){
+                        console.log(error);
+                    });
                 }
                 
                 
@@ -109,6 +163,7 @@ multiselect .dropdown-menu > li > a {
                         if(!skipSection)$scope.sections = response.data.section;
                         if(!skipTeam)$scope.teams = response.data.team;
                         if ($scope.iteration != undefined) $scope.loadDetails();
+						loadChart();
                     
                     },
                     function(rejection){
@@ -168,8 +223,6 @@ multiselect .dropdown-menu > li > a {
                 let parse = function(teamData){
                     arr = [];
                     for (const [key, value] of Object.entries(teamData)) {
-                        
-                        
                         /* Python is dumb and won't let us use a full object as a key, so we have to jam it all together and pull it apart.  The format expected is `Course::Section::TeamNo::id` */
                         parts = key.split("::");
                         let course = parts[0];
@@ -189,7 +242,12 @@ multiselect .dropdown-menu > li > a {
                     return arr;
                     
                 }
-                
+				
+				
+
+				
+				
+               
                 
                 loadTeams(false,false,false);
                 
@@ -283,6 +341,11 @@ multiselect .dropdown-menu > li > a {
                     </div>
             
                 </div>
+				
+				<div class="span6">
+					<canvas id="line-chart" width="200" height="200"></canvas>
+				
+				</div>
     
             </div>
         
