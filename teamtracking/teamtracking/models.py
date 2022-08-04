@@ -24,7 +24,10 @@ class Team(models.Model):
         dictionary["course"] = self.course
         dictionary["section"] = self.section
         dictionary["team"] = self.team
-        dictionary["assigned_TA"] = self.assigned_TA.username
+        if self.assigned_TA:
+            dictionary["assigned_TA"] = self.assigned_TA.username
+        else:
+            dictionary["assigned_TA"] = None
         return dictionary
 
     def __str__(self):
