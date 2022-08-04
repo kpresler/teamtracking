@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
+"""The point penalty for negative sentiment in TCRS natural language processing.  Should be enough to force the response negative."""
+negative_sentiment_penalty = -100
+
 
 class Team(models.Model):
     """Represents a team on project for a course"""

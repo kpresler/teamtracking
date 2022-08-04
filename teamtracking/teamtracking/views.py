@@ -29,6 +29,7 @@ from .models import (
     Iteration,
     Note,
     Team,
+    negative_sentiment_penalty,
 )
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -173,6 +174,10 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
         sid = SentimentIntensityAnalyzer()
 
         """Traverse over all responses submitted.  The JSON has the header used as object labels in each record, which is super nice"""
+
+        # TCRS responses where the NLP found negative sentiment.  It's not particularly good, so kick these back to the user to double-check :)
+        needs_checking = []
+
         for tcrs_response in request.data:
             print(tcrs_response)
 
@@ -232,6 +237,7 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                 if matchingQuestions != []:
                     matching_question = matchingQuestions[0]
                     print("Matching question is: " + str(matching_question))
+                    print("Matching question type: " + matching_question.qType)
                     question_response = TcrsQuestionResponse()
                     question_response.question = matching_question
                     question_response.response = response
@@ -253,13 +259,21 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
                             scoreFromQuestion = -2
                         if "strongly" in response.lower():
                             scoreFromQuestion *= 2
-                    elif matching_question.qType == "t" and not response.strip():
+                    elif matching_question.qType == "t" and response.strip():
+                        print("Processing natural language question")
                         # Text questions are natural language processed, as long as they exist :magier:
                         sentiment_scores = sid.polarity_scores(response)
                         # TODO: These magic numbers seem to work decently well but could stand to be revisited
-                        if ss["neg"] > 0 and ss["pos"] < 0.5:
+                        if (
+                            sentiment_scores["neg"] > 0
+                            and sentiment_scores["pos"] < 0.5
+                        ):
                             # kekw.  this is a way to force the score into negative if it's flagged through the natural language parser
-                            scoreFromQuestion -= 100
+                            scoreFromQuestion += negative_sentiment_penalty
+                            flagged = dict()
+                            flagged["text"] = response
+                            flagged["tcrsID"] = full_response.id
+                            needs_checking.append(flagged)
                         # endif
                     # end elif
 
@@ -270,15 +284,39 @@ class TcrsResponseViewSet(viewsets.ModelViewSet):
             saved_responses += 1
             full_response.score = response_score
             full_response.save()
-            print(str(full_response))
+            # print(str(full_response))
         # end for
 
-        response = (saved_responses, skipped_responses)
+        response = dict()
+        response["saved"] = saved_responses
+        response["skipped"] = skipped_responses
+        response["needs_checking"] = needs_checking
 
         sys.stdout.flush()
         return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
 
     # end method
+
+    @action(detail=False, methods=["post"])
+    @transaction.atomic
+    def toggle_sentiment(self, request):
+
+        tcrs_response = TcrsResponse.objects.filter(id=request.data["tcrsID"]).get()
+
+        isNegative = request.data["isNegative"]
+
+        # negative_sentiment_penalty is a negative number, so add it to force a lower score, subtract it to give a higher one
+
+        if isNegative:
+            tcrs_response.score += negative_sentiment_penalty
+
+        else:
+            tcrs_response.score -= negative_sentiment_penalty
+
+        tcrs_response.save()
+
+        resp = dict()
+        return JsonResponse(resp, safe=False, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"])
     @transaction.atomic
