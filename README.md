@@ -20,7 +20,7 @@ Setup is pretty standard for a Python Django application:
 * Install dependencies: `python[3] -m pip install -r requirements.txt`
 * Setup NLTK dependencies: `python[3] prepare.py`
 * Create database: `python[3] manage.py migrate`
-* Create admin user: `python[3] manage.py createsuperuser` (credentials are up to you, just, don't forget them :) )
+* Create admin user: `python[3] manage.py createsuperuser` (credentials are up to you, just, don't forget them :) ).  On Windows, you may get an error message "Superuser creation skipped due to not running in a TTY. You can run manage.py createsuperuser in your project to create one manually.".  If so, run `winpty python[3] manage.py createsuperuser` instead.
 * Run application server: `python[3] manage.py runserver`
 
 
@@ -104,3 +104,48 @@ If everything looks OK, click Upload.  Otherwise, double-check the CSV file and 
 Responses that were already present in the system will be skipped over.  All new responses will be uploaded.  A response is defined as "duplicate" if a response with the same 5-tuple (course, section, team, submitter, iteration) already exists.
 
 ### Viewing Teams
+
+The View Team Summary page is your starting point for viewing team challenges for your class(es):
+
+![](images/ViewTeamDetails.PNG)
+
+The chart on the right side shows a high-level overview, showing average team sentiment across all teams.  If this becomes messy (and, for large classes, it might), the dropdowns along the top can be used to filter it down further:
+
+![](images/ViewTeamDetailsFiltered.PNG)
+
+This may be particularly useful if you have many sections of a class (for example, individual lab sections) and you're interested in narrowing things down to just a specific section.  In this case, we have narrowed down to two specific teams instead.
+
+
+However, the chart may still be a messy way to view things.  If you're interested in just viewing the data, and not wading through a chart, you can view data on an iteration-by-iteration basis.  To do so, select an iteration from the dropdown in the top left, and then click "Load TCRS Details".  This will show four different views:
+
+* Struggling Teams This Week: Teams where **any member** of the team submitted a response with a score of 0 or below (indicating that things are overall going more wrong than right).
+
+* Largest Improvement This Week: Teams that have seen their average score increase by **at least 3** since the last iteration.
+
+* Largest Drop This Week: Teams that have seen their average score decrease by **at least 3** since the last iteration.
+
+* All Teams: A list of all teams, showing the range of scores for the team.
+
+All four lists include a link to view details for the specific team.  Clicking on the link takes you to the View Team Details page, explained below.
+
+### View Team Details
+
+The Team Details page is designed to give more information on a specific team & the challenges it is facing:
+
+![](images/IndividualTeamDetails.PNG)
+
+Clicking on one of the links from the Team Summary page will automatically populate team details for the team and iteration selected.  There are then three main pieces of information available:
+
+* Individual TCRS Responses: Shown in the table on the top left, this lets you view how each student on the team has answered the various questions on the TCRS.  If you want to see how they answered questions in a previous iteration, you can change the iteration from the dropdown, and click Load Data button.  Columns in the table show the specific TCRS questions; rows show responses from individual students.
+
+* Sentiment Per Student: Shown in the line chart on the right side, this shows how individual students on the team feel their team is working iteration-on-iteration.  
+
+* Notes Functionality.  If there is a team that is struggling multiple interations in a row, you may want to try engaging with the team in or out of class to offer them guidance and help on overcoming challenges.  You can then document this as a `Note` to keep track of what you tried, and if a team appears to be working more effectively the next time you interact with them.  Clicking Create Note brings up a window for entering in a note, which can then be saved or deleted.  Clicking View All Notes gives a chronologically sorted (newest at top) list of notes for a specific team, showing who made the note, when, and the note contents:
+
+![](images/ViewAllNotes.PNG)
+
+You can also assign a TA to a specific team, so that TAs can keep track of the teams they are responsible for supervising.  
+
+![](images/AssignTA.PNG)
+
+Functionality is underway for users to view just their assigned teams.
