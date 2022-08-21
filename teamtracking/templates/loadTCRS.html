@@ -121,28 +121,56 @@ input:checked + .slider:before {
                         console.log(file)
                         var fileSize = 0;
                         if (filename.files[0]) {
-                             
-                            var reader = new FileReader();
-                            reader.onload = function (e) {
-                                var table = $("<table />").css('width','100%');
-                    
-                                var rows = e.target.result.split("\n");
-                                for (var i = 0; i < rows.length && i <= 10; i++) {
-                                    var row = $("<tr  />");
-                                    var cells = rows[i].split(",");
-                                    for (var j = 0; j < cells.length; j++) {
-                                        var cell = $("<td />").css('border','1px solid black');
-                                        cell.html(cells[j]);
-                                        row.append(cell);
+                        
+                            var allResults = [];
+                        
+                            Papa.parse(file, {
+                                download: true,
+                                header: true,
+                                skipEmptyLines: true,
+                                error: function(err, file, inputElem, reason) { },
+                                complete: function(results) {
+                                
+                                    
+                                    var table = $("<table />").css('width','100%');
+                            
+                                    var count = 0;
+                                    for (response of results.data){                    
+                                        if (0 == count){
+                                            var header = $("<tr  />");
+                                        }
+                                        else if (count >= 10){
+                                            break;
+                                        }
+                                        var row = $("<tr  />");
+
+                                        for (const [key, value] of Object.entries(response)) {
+                                            var cell = $("<td />").css('border','1px solid black');
+                                            cell.html(value);
+                                            
+                                            if (0 == count){
+                                                var headerCell = $("<td />").css('border','1px solid black');
+                                                headerCell.html(key);
+                                                header.append(headerCell);
+                                            }
+                                            
+                                            //console.log(`${key}: ${value}`);
+                                            row.append(cell);
+                                        }
+                                        if (0 == count){
+                                            table.append(header);
+                                        }
+                                        table.append(row);
+                                        count++;
+                                
                                     }
-                                    table.append(row);
+                            
+                                    $("#dvCSV").html('');
+                                    $("#dvCSV").append(table);
+                                    
+                                    
                                 }
-                                $("#dvCSV").html('');
-                                $("#dvCSV").append(table);
-                            }
-                
-                            reader.readAsText(filename.files[0]);
-            
+                            }); 
                         }
                         return false;
                     }
@@ -194,9 +222,6 @@ input:checked + .slider:before {
 
                 }
 
-                    
-                                    
-                      
             });
 
             /*]]>*/
