@@ -221,6 +221,9 @@
                 }
                 
                 let parse = function(teamData){
+                    if (undefined == teamData){
+                        return undefined;
+                    }
                     arr = [];
                     for (const [key, value] of Object.entries(teamData)) {
                         /* Python is dumb and won't let us use a full object as a key, so we have to jam it all together and pull it apart.  The format expected is `Course::Section::TeamNo::id` */
